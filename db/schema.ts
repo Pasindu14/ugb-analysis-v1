@@ -1,4 +1,4 @@
-import { pgTable, serial, bigserial, text, timestamp, boolean, integer, jsonb, index, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, serial, bigserial, text, timestamp, boolean, integer, jsonb, index, pgEnum, date, numeric, doublePrecision } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 export const userRoleEnum = pgEnum('user_role', [
@@ -73,3 +73,36 @@ export const departmentsTable = pgTable("departments", {
 export type Department       = typeof departmentsTable.$inferSelect
 export type DepartmentInsert = typeof departmentsTable.$inferInsert
 export type DepartmentUpdate = Partial<Omit<DepartmentInsert, 'id' | 'companyId' | 'createdAt'>>
+
+export const areaCustomerSalesTable = pgTable('area_customer_sales', {
+  id:              serial('id').primaryKey(),
+  companyId:       integer('company_id').notNull().references(() => companiesTable.id),
+  reportDate:      date('report_date').notNull(),
+  areaName:        text('area_name').notNull(),
+  supervisorCode:  integer('supervisor_code').notNull(),
+  supervisorName:  text('supervisor_name').notNull(),
+  distributorCode: integer('distributor_code').notNull(),
+  distributorName: text('distributor_name').notNull(),
+  divisionCode:    integer('division_code').notNull(),
+  divisionName:    text('division_name').notNull(),
+  repCode:         integer('rep_code').notNull(),
+  repName:         text('rep_name').notNull(),
+  rootCode:        integer('root_code').notNull(),
+  rootName:        text('root_name').notNull(),
+  outletType:      text('outlet_type').notNull(),
+  customerCode:    integer('customer_code').notNull(),
+  customerName:    text('customer_name').notNull(),
+  grossSaleAmount: numeric('gross_sale_amount', { precision: 12, scale: 2 }).notNull().default('0'),
+  netSaleAmount:   numeric('net_sale_amount', { precision: 12, scale: 2 }).notNull().default('0'),
+  latitude:        doublePrecision('latitude'),
+  longitude:       doublePrecision('longitude'),
+  importedAt:      timestamp('imported_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+  index('acs_company_report_date_idx').on(table.companyId, table.reportDate),
+  index('acs_company_area_idx').on(table.companyId, table.areaName),
+  index('acs_company_outlet_type_idx').on(table.companyId, table.outletType),
+  index('acs_company_rep_idx').on(table.companyId, table.repName),
+])
+
+export type AreaCustomerSale       = typeof areaCustomerSalesTable.$inferSelect
+export type AreaCustomerSaleInsert = typeof areaCustomerSalesTable.$inferInsert

@@ -1,0 +1,101 @@
+'use client'
+
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import { getSalesAction, getSalesFilterOptionsAction } from '../actions/sales.actions'
+import { useImportDialog } from '../store'
+import type { SalesFilterDto } from '../schemas/sales.schema'
+
+export const salesKeys = {
+  all:     ['sales'] as const,
+  lists:   ['sales', 'list'] as const,
+  list:    (filters: object) => [...salesKeys.lists, filters] as const,
+  options: ['sales', 'filter-options'] as const,
+}
+
+export function useSalesFilterOptions() {
+  return useQuery({
+    queryKey: salesKeys.options,
+    queryFn: async () => {
+      const result = await getSalesFilterOptionsAction()
+      if (!result.success) throw new Error(result.error)
+      return result.data
+    },
+    staleTime: 5 * 60 * 1000, // 5 min — distinct values don't change during a session
+  })
+}
+
+export function useSalesDataTable(
+  page: number,
+  pageSize: number,
+  search: string,
+  _dateRange?: { from_date: string; to_date: string },
+  _sortBy?: string,
+  _sortOrder?: string,
+  _caseConfig?: unknown,
+  customFilters?: Record<string, unknown>,
+) {
+  const filters: SalesFilterDto = {
+    reportDateFrom:  customFilters?.reportDateFrom  as string | undefined,
+    reportDateTo:    customFilters?.reportDateTo    as string | undefined,
+    areaName:        customFilters?.areaName        as string | undefined,
+    supervisorName:  customFilters?.supervisorName  as string | undefined,
+    distributorName: customFilters?.distributorName as string | undefined,
+    repName:         customFilters?.repName         as string | undefined,
+    rootName:        customFilters?.rootName        as string | undefined,
+    outletType:      customFilters?.outletType      as string | undefined,
+    grossMin:        customFilters?.grossMin != null ? Number(customFilters.grossMin) : undefined,
+    grossMax:        customFilters?.grossMax != null ? Number(customFilters.grossMax) : undefined,
+    netMin:          customFilters?.netMin   != null ? Number(customFilters.netMin)   : undefined,
+    netMax:          customFilters?.netMax   != null ? Number(customFilters.netMax)   : undefined,
+  }
+
+  return useQuery({
+    queryKey: salesKeys.list({ page, pageSize, filters }),
+    queryFn: async () => {
+      const result = await getSalesAction({ filters, page, pageSize })
+      if (!result.success) throw new Error(result.error)
+
+      const { items, total, page: p, pageSize: ps, totalPages } = result.data
+      return {
+        success: true as const,
+        data: items,
+        pagination: {
+          page:        p,
+          limit:       ps,
+          total_pages: totalPages,
+          total_items: total,
+        },
+      }
+    },
+    placeholderData: keepPreviousData,
+  })
+}
+
+;(useSalesDataTable as unknown as Record<string, unknown>).isQueryHook = true
+
+export function useImportSales() {
+  const queryClient = useQueryClient()
+  const { close }   = useImportDialog()
+
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await fetch('/api/sales/import', { method: 'POST', body: formData })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Import failed' }))
+        throw new Error(err.error ?? 'Import failed')
+      }
+      return res.json() as Promise<{ inserted: number; reportDate: string }>
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: salesKeys.all })
+      close()
+      toast.success(`Imported ${data.inserted} records for ${data.reportDate}`)
+    },
+    onError: (err: Error) => {
+      toast.error(err.message)
+    },
+  })
+}
