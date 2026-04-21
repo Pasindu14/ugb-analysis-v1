@@ -105,11 +105,13 @@ export function MapFilters({ filters, onChange }: MapFiltersProps) {
   }
 
   function reset() {
-    onChange({})
+    onChange({
+      reportDateFrom: filters.reportDateFrom,
+      reportDateTo:   filters.reportDateTo,
+    })
   }
 
   function handleAreaChange(v: string) {
-    // Reset all dimension filters when area changes
     onChange({
       reportDateFrom: filters.reportDateFrom,
       reportDateTo:   filters.reportDateTo,
@@ -117,7 +119,8 @@ export function MapFilters({ filters, onChange }: MapFiltersProps) {
     })
   }
 
-  const activeCount = Object.values(filters).filter((v) => v != null && v !== '').length
+  const { reportDateFrom, reportDateTo, ...nonDateFilters } = filters
+  const activeCount = Object.values(nonDateFilters).filter((v) => v != null && v !== '').length
   const hasArea = !!filters.areaName
 
   return (
