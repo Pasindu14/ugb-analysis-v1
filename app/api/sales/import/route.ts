@@ -26,13 +26,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No worksheet found in file' }, { status: 400 })
   }
 
-  // Row 3 contains: "From: 2026-03-01    To: 2026-03-31    Territory: ..."
-  const headerRow3 = ws.getRow(3).getCell(1).value?.toString() ?? ''
-  const dateMatch  = headerRow3.match(/From:\s*(\d{4}-\d{2}-\d{2})/)
-  if (!dateMatch) {
-    return NextResponse.json({ error: 'Cannot determine report date from file. Expected "From: YYYY-MM-DD" in row 3.' }, { status: 400 })
+  const manualDate = (formData.get('reportDate') as string | null)?.trim() ?? ''
+  let reportDate: string
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(manualDate)) {
+    reportDate = manualDate
+  } else {
+    // Fall back to extracting from row 3: "From: 2026-03-01  To: ..."
+    const headerRow3 = ws.getRow(3).getCell(1).value?.toString() ?? ''
+    const dateMatch  = headerRow3.match(/From:\s*(\d{4}-\d{2}-\d{2})/)
+    if (!dateMatch) {
+      return NextResponse.json(
+        { error: 'Cannot determine report date. Select a date or check the file format (expected "From: YYYY-MM-DD" in row 3).' },
+        { status: 400 },
+      )
+    }
+    reportDate = dateMatch[1]
   }
-  const reportDate = dateMatch[1]
 
   const rows: AreaCustomerSaleInsert[] = []
 

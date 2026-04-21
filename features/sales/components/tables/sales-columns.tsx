@@ -4,19 +4,41 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { DataTableColumnHeader } from '@/components/data-table/column-header'
 import type { AreaCustomerSale } from '@/db/schema'
 
+function MoneyCell({ value }: { value: number }) {
+  return (
+    <span className="text-sm font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+      {value.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+    </span>
+  )
+}
+
+function OutletBadge({ type }: { type: string }) {
+  return (
+    <span className="inline-flex items-center rounded-full border border-border bg-muted/60 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+      {type}
+    </span>
+  )
+}
+
 export function getSalesColumns(): ColumnDef<AreaCustomerSale>[] {
   return [
     {
       accessorKey: 'reportDate',
       size: 110,
       header: ({ column }) => <DataTableColumnHeader column={column} title="Period" />,
-      cell: ({ row }) => <span className="text-sm">{row.getValue('reportDate')}</span>,
+      cell: ({ row }) => (
+        <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-mono text-muted-foreground">
+          {row.getValue('reportDate')}
+        </span>
+      ),
     },
     {
       accessorKey: 'areaName',
       size: 150,
       header: ({ column }) => <DataTableColumnHeader column={column} title="Area" />,
-      cell: ({ row }) => <span className="font-medium">{row.getValue('areaName')}</span>,
+      cell: ({ row }) => (
+        <span className="text-sm font-semibold tracking-tight">{row.getValue('areaName')}</span>
+      ),
     },
     {
       accessorKey: 'supervisorName',
@@ -40,19 +62,23 @@ export function getSalesColumns(): ColumnDef<AreaCustomerSale>[] {
       accessorKey: 'rootName',
       size: 120,
       header: ({ column }) => <DataTableColumnHeader column={column} title="Route" />,
-      cell: ({ row }) => <span className="text-sm">{row.getValue('rootName')}</span>,
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">{row.getValue('rootName')}</span>
+      ),
     },
     {
       accessorKey: 'outletType',
-      size: 200,
+      size: 210,
       header: ({ column }) => <DataTableColumnHeader column={column} title="Outlet Type" />,
-      cell: ({ row }) => <span className="text-sm text-muted-foreground">{row.getValue('outletType')}</span>,
+      cell: ({ row }) => <OutletBadge type={row.getValue('outletType')} />,
     },
     {
       accessorKey: 'customerCode',
       size: 100,
       header: ({ column }) => <DataTableColumnHeader column={column} title="Cust. Code" />,
-      cell: ({ row }) => <span className="text-sm font-mono">{row.getValue('customerCode')}</span>,
+      cell: ({ row }) => (
+        <span className="text-xs font-mono text-muted-foreground">{row.getValue('customerCode')}</span>
+      ),
     },
     {
       accessorKey: 'customerName',
@@ -64,21 +90,13 @@ export function getSalesColumns(): ColumnDef<AreaCustomerSale>[] {
       accessorKey: 'grossSaleAmount',
       size: 130,
       header: ({ column }) => <DataTableColumnHeader column={column} title="Gross Sale" />,
-      cell: ({ row }) => (
-        <span className="text-sm font-medium tabular-nums">
-          {Number(row.getValue('grossSaleAmount')).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-        </span>
-      ),
+      cell: ({ row }) => <MoneyCell value={Number(row.getValue('grossSaleAmount'))} />,
     },
     {
       accessorKey: 'netSaleAmount',
       size: 120,
       header: ({ column }) => <DataTableColumnHeader column={column} title="Net Sale" />,
-      cell: ({ row }) => (
-        <span className="text-sm font-medium tabular-nums">
-          {Number(row.getValue('netSaleAmount')).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-        </span>
-      ),
+      cell: ({ row }) => <MoneyCell value={Number(row.getValue('netSaleAmount'))} />,
     },
   ]
 }

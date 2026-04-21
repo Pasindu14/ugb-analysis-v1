@@ -1,8 +1,5 @@
 "use client";
-import {
-  Cog,
-  GalleryVerticalEnd,
-} from "lucide-react";
+import { Cog, GalleryVerticalEnd, BarChart2 } from "lucide-react";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import { CompanyLogo } from "@/components/company-logo";
@@ -30,22 +27,29 @@ const data = {
   ],
   navMain: [
     {
+      title: "Sales",
+      url: "#",
+      icon: BarChart2,
+      isActive: true,
+      items: [
+        {
+          title: "Area Customer Sales",
+          url: "/sales",
+        },
+      ],
+    },
+    {
       title: "Masters",
       url: "#",
       icon: Cog,
-      isActive: true,
       items: [
         {
           title: "Users",
           url: "/users",
         },
-        {
-          title: "Departments",
-          url: "/departments",
-        },
       ],
     },
-/*     {
+    /*     {
       title: "Models",
       url: "#",
       icon: Bot,
@@ -112,7 +116,7 @@ const data = {
     }, */
   ],
   projects: [
-/*     {
+    /*     {
       name: "Design Engineering",
       url: "#",
       icon: Frame,

@@ -79,9 +79,10 @@ export function useImportSales() {
   const { close }   = useImportDialog()
 
   return useMutation({
-    mutationFn: async (file: File) => {
+    mutationFn: async ({ file, reportDate }: { file: File; reportDate: string }) => {
       const formData = new FormData()
       formData.append('file', file)
+      formData.append('reportDate', reportDate)
       const res = await fetch('/api/sales/import', { method: 'POST', body: formData })
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: 'Import failed' }))
