@@ -43,7 +43,7 @@ const data = {
         },
       ],
     },
-    {
+    /*     {
       title: "Masters",
       url: "#",
       icon: Cog,
@@ -53,7 +53,7 @@ const data = {
           url: "/users",
         },
       ],
-    },
+    }, */
     /*     {
       title: "Models",
       url: "#",
