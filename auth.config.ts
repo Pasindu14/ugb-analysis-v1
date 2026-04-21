@@ -3,35 +3,30 @@ import type { NextAuthConfig } from "next-auth"
 export default {
   providers: [],
   pages: {
-    signIn: "/login",
+    signIn: "/sign-in",
     error: "/auth/error",
   },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
-        const isLoggedIn = !!auth?.user
-        const userRole = auth?.user?.role
-        const path = nextUrl.pathname
+      const isLoggedIn = !!auth?.user
+      const path = nextUrl.pathname
 
-        // Redirect logged-in users away from login page
-        if (path === "/login" && isLoggedIn) {
-          return Response.redirect(new URL("/dashboard", nextUrl))
-        }
+      const publicPaths = ["/sign-in", "/login"]
+      const isPublic = publicPaths.includes(path)
 
-        // Protect dashboard routes
-        if (path.startsWith("/dashboard")) {
-          if (!isLoggedIn) {
-                return Response.redirect(new URL("/sign-in", nextUrl))
-              }
-              // Only allow admin users to access dashboard
-              if (userRole !== "admin") {
-                  return Response.redirect(new URL("/unauthorized", nextUrl))
-                }
-              return true
-            }
-
-        // Allow all other routes
+      if (isPublic) {
+        // Send authenticated users away from auth pages
+        if (isLoggedIn) return Response.redirect(new URL("/sales/map", nextUrl))
         return true
-      },
+      }
+
+      // All other routes require authentication
+      if (!isLoggedIn) {
+        return Response.redirect(new URL("/sign-in", nextUrl))
+      }
+
+      return true
+    },
       async jwt({ token, user }) {
         // On sign in, add user data to token
         if (user) {
