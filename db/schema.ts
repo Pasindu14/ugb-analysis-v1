@@ -96,6 +96,7 @@ export const areaCustomerSalesTable = pgTable('area_customer_sales', {
   netSaleAmount:   numeric('net_sale_amount', { precision: 12, scale: 2 }).notNull().default('0'),
   latitude:        doublePrecision('latitude'),
   longitude:       doublePrecision('longitude'),
+  importFileName:  text('import_file_name'),
   importedAt:      timestamp('imported_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [
   index('acs_company_report_date_idx').on(table.companyId, table.reportDate),

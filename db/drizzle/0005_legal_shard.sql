@@ -1,0 +1,1 @@
+ALTER TABLE "area_customer_sales" ADD COLUMN "import_file_name" text;

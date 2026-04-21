@@ -11,3 +11,12 @@ export const useImportDialog = () =>
       close:  s.closeImport,
     }))
   )
+
+export const useManageImportsDialog = () =>
+  useSalesDialogStore(
+    useShallow((s) => ({
+      isOpen: s.isManageImportsOpen,
+      open:   s.openManageImports,
+      close:  s.closeManageImports,
+    }))
+  )

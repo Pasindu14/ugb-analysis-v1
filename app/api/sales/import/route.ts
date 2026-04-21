@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
   })
 
   try {
-    const inserted = await SalesService.importPeriod(companyId, reportDate, rows)
+    const inserted = await SalesService.importPeriod(companyId, reportDate, rows, file.name)
     return NextResponse.json({ inserted, reportDate })
   } catch (err: any) {
     console.error('[sales/import]', err)

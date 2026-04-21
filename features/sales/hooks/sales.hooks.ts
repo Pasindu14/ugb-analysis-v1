@@ -6,8 +6,11 @@ import { getSalesAction, getSalesFilterOptionsAction } from '../actions/sales.ac
 import { getSalesMapPointsAction } from '../actions/get-sales-map-points.action'
 import { getSalesRoutesByAreaAction } from '../actions/get-sales-routes-by-area.action'
 import { getSalesFilterOptionsByAreaAction } from '../actions/get-sales-filter-options-by-area.action'
-import { useImportDialog } from '../store'
+import { getSalesImportHistoryAction } from '../actions/get-sales-import-history.action'
+import { deleteSalesImportAction } from '../actions/delete-sales-import.action'
+import { useImportDialog, useManageImportsDialog } from '../store'
 import type { SalesFilterDto, SalesMapPoint, SalesAreaFilterOptions } from '../schemas/sales.schema'
+import type { ImportHistoryRow } from '../repositories/sales.repository'
 
 export const salesKeys = {
   all:     ['sales'] as const,
@@ -113,6 +116,38 @@ export function useSalesMapPoints(filters: SalesFilterDto) {
     },
     enabled: !!filters.areaName,
     placeholderData: keepPreviousData,
+  })
+}
+
+export function useSalesImportHistory() {
+  return useQuery({
+    queryKey: ['sales', 'import-history'] as const,
+    queryFn: async (): Promise<ImportHistoryRow[]> => {
+      const result = await getSalesImportHistoryAction()
+      if (!result.success) throw new Error(result.error)
+      return result.data
+    },
+  })
+}
+
+export function useDeleteSalesImport() {
+  const queryClient = useQueryClient()
+  const { close } = useManageImportsDialog()
+
+  return useMutation({
+    mutationFn: async (importFileName: string) => {
+      const result = await deleteSalesImportAction({ importFileName })
+      if (!result.success) throw new Error(result.error)
+      return result.data
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: salesKeys.all })
+      queryClient.invalidateQueries({ queryKey: ['sales', 'import-history'] })
+      toast.success(`Deleted ${data.deleted} records`)
+    },
+    onError: (err: Error) => {
+      toast.error(err.message)
+    },
   })
 }
 

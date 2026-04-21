@@ -1,6 +1,13 @@
 import { db } from '@/db/drizzle'
 import { areaCustomerSalesTable } from '@/db/schema'
 import { eq, and, gte, lte, sql, isNotNull } from 'drizzle-orm'
+
+export type ImportHistoryRow = {
+  importFileName: string | null
+  reportDate: string
+  recordCount: number
+  importedAt: string
+}
 import { executeQuery } from '@/lib/queries/wrapper'
 import {
   getOffset,
@@ -209,7 +216,8 @@ export class SalesRepository {
   static async replaceByPeriod(
     companyId: number,
     reportDate: string,
-    rows: AreaCustomerSaleInsert[]
+    rows: AreaCustomerSaleInsert[],
+    importFileName?: string,
   ): Promise<number> {
     return executeQuery(
       { context: this.context, method: 'replaceByPeriod', logParams: { companyId, reportDate, count: rows.length } },
@@ -223,12 +231,56 @@ export class SalesRepository {
 
         if (rows.length === 0) return 0
 
+        const tagged = rows.map((r) => ({ ...r, importFileName: importFileName ?? null }))
         let inserted = 0
-        for (let i = 0; i < rows.length; i += BATCH_SIZE) {
-          await db.insert(areaCustomerSalesTable).values(rows.slice(i, i + BATCH_SIZE))
-          inserted += Math.min(BATCH_SIZE, rows.length - i)
+        for (let i = 0; i < tagged.length; i += BATCH_SIZE) {
+          await db.insert(areaCustomerSalesTable).values(tagged.slice(i, i + BATCH_SIZE))
+          inserted += Math.min(BATCH_SIZE, tagged.length - i)
         }
         return inserted
+      }
+    )
+  }
+
+  static async getImportHistory(companyId: number): Promise<ImportHistoryRow[]> {
+    return executeQuery(
+      { context: this.context, method: 'getImportHistory', logParams: { companyId } },
+      async () => {
+        const rows = await db
+          .select({
+            importFileName: areaCustomerSalesTable.importFileName,
+            reportDate:     sql<string>`min(${areaCustomerSalesTable.reportDate})`,
+            recordCount:    sql<number>`count(*)::int`,
+            importedAt:     sql<string>`max(${areaCustomerSalesTable.importedAt})`,
+          })
+          .from(areaCustomerSalesTable)
+          .where(
+            and(
+              eq(areaCustomerSalesTable.companyId, companyId),
+              isNotNull(areaCustomerSalesTable.importFileName),
+            )
+          )
+          .groupBy(areaCustomerSalesTable.importFileName)
+          .orderBy(sql`max(${areaCustomerSalesTable.importedAt}) desc`)
+        return rows as ImportHistoryRow[]
+      }
+    )
+  }
+
+  static async deleteByImportFileName(companyId: number, importFileName: string): Promise<number> {
+    return executeQuery(
+      { context: this.context, method: 'deleteByImportFileName', logParams: { companyId, importFileName } },
+      async () => {
+        const result = await db
+          .delete(areaCustomerSalesTable)
+          .where(
+            and(
+              eq(areaCustomerSalesTable.companyId, companyId),
+              eq(areaCustomerSalesTable.importFileName, importFileName),
+            )
+          )
+          .returning({ id: areaCustomerSalesTable.id })
+        return result.length
       }
     )
   }

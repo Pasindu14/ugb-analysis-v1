@@ -1,5 +1,5 @@
 import { executeService } from '@/lib/services/wrapper'
-import { SalesRepository } from '../repositories/sales.repository'
+import { SalesRepository, type ImportHistoryRow } from '../repositories/sales.repository'
 import type { SalesFilterDto, SalesFilterOptions, SalesMapPoint, SalesAreaFilterOptions } from '../schemas/sales.schema'
 import type { AreaCustomerSale, AreaCustomerSaleInsert } from '@/db/schema'
 import type { OffsetPagination, OffsetPaginatedResult } from '@/lib/queries/pagination'
@@ -55,11 +55,26 @@ export class SalesService {
   static async importPeriod(
     companyId: number,
     reportDate: string,
-    rows: AreaCustomerSaleInsert[]
+    rows: AreaCustomerSaleInsert[],
+    importFileName?: string,
   ): Promise<number> {
     return executeService(
       { context: this.context, method: 'importPeriod', logParams: { companyId, reportDate, count: rows.length } },
-      async () => SalesRepository.replaceByPeriod(companyId, reportDate, rows)
+      async () => SalesRepository.replaceByPeriod(companyId, reportDate, rows, importFileName)
+    )
+  }
+
+  static async getImportHistory(companyId: number): Promise<ImportHistoryRow[]> {
+    return executeService(
+      { context: this.context, method: 'getImportHistory', logParams: { companyId } },
+      async () => SalesRepository.getImportHistory(companyId)
+    )
+  }
+
+  static async deleteImport(companyId: number, importFileName: string): Promise<number> {
+    return executeService(
+      { context: this.context, method: 'deleteImport', logParams: { companyId, importFileName } },
+      async () => SalesRepository.deleteByImportFileName(companyId, importFileName)
     )
   }
 }
