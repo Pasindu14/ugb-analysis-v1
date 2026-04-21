@@ -4,96 +4,97 @@ import { useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { Loader2 } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldSeparator,
-} from "@/components/ui/field"
+import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
+import { Label } from "@/components/ui/label";
 
-export function LoginForm({
-  className,
-  ...props
-}: React.ComponentProps<"form">) {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
+export function LoginForm() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-
+    e.preventDefault();
+    setLoading(true);
     try {
       const result = await signIn("credentials", {
         email,
         password,
         redirect: false,
-      })
-
+      });
       if (result?.error) {
-        toast.error("Invalid credentials")
+        toast.error("Invalid credentials");
       } else {
-        router.push("/users");
-        router.refresh()
+        router.push("/sales/map");
+        router.refresh();
       }
-    } catch (err) {
-      toast.error("Sign in failed")
+    } catch {
+      toast.error("Sign in failed");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <Card className="border-0 shadow-xl bg-white/95 dark:bg-slate-950/95 backdrop-blur border">
-      <CardHeader className="space-y-2 text-center">
-        <CardTitle className="text-3xl font-bold tracking-tight">Sign In</CardTitle>
-        <CardDescription className="text-base">
-          Enter your credentials to access your account
-        </CardDescription>
-      </CardHeader>
-      <Separator />
-      <CardContent>
-        <form onSubmit={handleSubmit} className={cn("flex flex-col gap-6", className)} {...props}>
-          <FieldGroup>
-            <Field>
-              <FieldLabel htmlFor="email">Email Address</FieldLabel>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="you@example.com" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required 
-                className="h-10"
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="password">Password</FieldLabel>
-              <Input 
-                id="password" 
-                type="password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required 
-                className="h-10"
-              />
-            </Field>
-            <Field>
-              <Button type="submit" className="w-full h-10 text-base font-semibold" disabled={loading}>
-                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Sign In"}
-              </Button>
-            </Field>
-          </FieldGroup>
-        </form>
-      </CardContent>
-    </Card>
-  )
+    <div className="space-y-8">
+      {/* Mobile brand mark */}
+      <div className="flex items-center gap-2 lg:hidden">
+        <div className="size-5 border border-foreground/20 flex items-center justify-center">
+          <div className="size-1.5 bg-foreground/60" />
+        </div>
+        <span className="text-muted-foreground text-xs tracking-[0.28em] uppercase">
+          UGB Analysis
+        </span>
+      </div>
+
+      {/* Heading */}
+      <div className="space-y-1.5">
+        <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+          Sign in
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Enter your credentials to access your workspace.
+        </p>
+      </div>
+
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="space-y-1.5">
+          <Label htmlFor="email">Email address</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="you@company.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="current-password"
+          />
+        </div>
+
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? <Loader2 className="size-4 animate-spin" /> : "Sign in"}
+        </Button>
+      </form>
+
+      <p className="text-center text-[11px] text-muted-foreground/50 tracking-wider uppercase">
+        Secure enterprise access
+      </p>
+    </div>
+  );
 }
