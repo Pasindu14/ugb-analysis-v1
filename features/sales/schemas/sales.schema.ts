@@ -26,3 +26,26 @@ export type SalesFilterOptions = {
   outletTypes:      string[]
   reportDates:      string[]
 }
+
+export type SalesAreaFilterOptions = {
+  supervisorNames:  string[]
+  distributorNames: string[]
+  repNames:         string[]
+  rootNames:        string[]
+  outletTypes:      string[]
+}
+
+export type SalesMapPoint = {
+  id:              number
+  customerName:    string
+  customerCode:    number
+  areaName:        string
+  outletType:      string
+  latitude:        number
+  longitude:       number
+  grossSaleAmount: string
+  netSaleAmount:   string
+  repName:         string
+  distributorName: string
+  reportDate:      string
+}

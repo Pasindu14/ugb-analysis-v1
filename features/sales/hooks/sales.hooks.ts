@@ -3,8 +3,11 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { getSalesAction, getSalesFilterOptionsAction } from '../actions/sales.actions'
+import { getSalesMapPointsAction } from '../actions/get-sales-map-points.action'
+import { getSalesRoutesByAreaAction } from '../actions/get-sales-routes-by-area.action'
+import { getSalesFilterOptionsByAreaAction } from '../actions/get-sales-filter-options-by-area.action'
 import { useImportDialog } from '../store'
-import type { SalesFilterDto } from '../schemas/sales.schema'
+import type { SalesFilterDto, SalesMapPoint, SalesAreaFilterOptions } from '../schemas/sales.schema'
 
 export const salesKeys = {
   all:     ['sales'] as const,
@@ -73,6 +76,45 @@ export function useSalesDataTable(
 }
 
 ;(useSalesDataTable as unknown as Record<string, unknown>).isQueryHook = true
+
+export function useSalesFilterOptionsByArea(areaName: string | undefined) {
+  return useQuery({
+    queryKey: ['sales', 'filter-options-by-area', areaName],
+    queryFn: async (): Promise<SalesAreaFilterOptions> => {
+      const result = await getSalesFilterOptionsByAreaAction({ areaName: areaName! })
+      if (!result.success) throw new Error(result.error)
+      return result.data
+    },
+    enabled: !!areaName,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export function useSalesRoutesByArea(areaName: string | undefined) {
+  return useQuery({
+    queryKey: ['sales', 'routes-by-area', areaName],
+    queryFn: async (): Promise<string[]> => {
+      const result = await getSalesRoutesByAreaAction({ areaName: areaName! })
+      if (!result.success) throw new Error(result.error)
+      return result.data
+    },
+    enabled: !!areaName,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export function useSalesMapPoints(filters: SalesFilterDto) {
+  return useQuery({
+    queryKey: salesKeys.list({ type: 'map', filters }),
+    queryFn: async (): Promise<SalesMapPoint[]> => {
+      const result = await getSalesMapPointsAction({ filters })
+      if (!result.success) throw new Error(result.error)
+      return result.data
+    },
+    enabled: !!filters.areaName,
+    placeholderData: keepPreviousData,
+  })
+}
 
 export function useImportSales() {
   const queryClient = useQueryClient()

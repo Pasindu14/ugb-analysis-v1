@@ -1,5 +1,5 @@
 "use client";
-import { Cog, GalleryVerticalEnd, BarChart2 } from "lucide-react";
+import { Cog, GalleryVerticalEnd, BarChart2, MapPin } from "lucide-react";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import { CompanyLogo } from "@/components/company-logo";
@@ -35,6 +35,11 @@ const data = {
         {
           title: "Area Customer Sales",
           url: "/sales",
+        },
+        {
+          title: "Outlet Map",
+          url: "/sales/map",
+          icon: MapPin,
         },
       ],
     },

@@ -1,6 +1,6 @@
 import { db } from '@/db/drizzle'
 import { areaCustomerSalesTable } from '@/db/schema'
-import { eq, and, gte, lte, sql } from 'drizzle-orm'
+import { eq, and, gte, lte, sql, isNotNull } from 'drizzle-orm'
 import { executeQuery } from '@/lib/queries/wrapper'
 import {
   getOffset,
@@ -10,7 +10,7 @@ import {
   DEFAULT_PAGE_SIZE,
 } from '@/lib/queries/pagination'
 import type { AreaCustomerSale, AreaCustomerSaleInsert } from '@/db/schema'
-import type { SalesFilterDto, SalesFilterOptions } from '../schemas/sales.schema'
+import type { SalesFilterDto, SalesFilterOptions, SalesMapPoint, SalesAreaFilterOptions } from '../schemas/sales.schema'
 
 const BATCH_SIZE = 500
 
@@ -101,6 +101,105 @@ export class SalesRepository {
           outletTypes:      outletTypes.map(r => r.val),
           reportDates:      reportDates.map(r => r.val),
         }
+      }
+    )
+  }
+
+  static async findFilterOptionsByArea(
+    companyId: number,
+    areaName: string
+  ): Promise<SalesAreaFilterOptions> {
+    return executeQuery(
+      { context: this.context, method: 'findFilterOptionsByArea', logParams: { companyId, areaName } },
+      async () => {
+        const where = and(
+          eq(areaCustomerSalesTable.companyId, companyId),
+          eq(areaCustomerSalesTable.areaName, areaName),
+        )
+
+        const [supervisorNames, distributorNames, repNames, rootNames, outletTypes] = await Promise.all([
+          db.selectDistinct({ val: areaCustomerSalesTable.supervisorName })
+            .from(areaCustomerSalesTable).where(where).orderBy(areaCustomerSalesTable.supervisorName),
+          db.selectDistinct({ val: areaCustomerSalesTable.distributorName })
+            .from(areaCustomerSalesTable).where(where).orderBy(areaCustomerSalesTable.distributorName),
+          db.selectDistinct({ val: areaCustomerSalesTable.repName })
+            .from(areaCustomerSalesTable).where(where).orderBy(areaCustomerSalesTable.repName),
+          db.selectDistinct({ val: areaCustomerSalesTable.rootName })
+            .from(areaCustomerSalesTable).where(where).orderBy(areaCustomerSalesTable.rootName),
+          db.selectDistinct({ val: areaCustomerSalesTable.outletType })
+            .from(areaCustomerSalesTable).where(where).orderBy(areaCustomerSalesTable.outletType),
+        ])
+
+        return {
+          supervisorNames:  supervisorNames.map((r) => r.val),
+          distributorNames: distributorNames.map((r) => r.val),
+          repNames:         repNames.map((r) => r.val),
+          rootNames:        rootNames.map((r) => r.val),
+          outletTypes:      outletTypes.map((r) => r.val),
+        }
+      }
+    )
+  }
+
+  static async findRoutesByArea(companyId: number, areaName: string): Promise<string[]> {
+    return executeQuery(
+      { context: this.context, method: 'findRoutesByArea', logParams: { companyId, areaName } },
+      async () => {
+        const rows = await db
+          .selectDistinct({ val: areaCustomerSalesTable.rootName })
+          .from(areaCustomerSalesTable)
+          .where(and(
+            eq(areaCustomerSalesTable.companyId, companyId),
+            eq(areaCustomerSalesTable.areaName, areaName),
+          ))
+          .orderBy(areaCustomerSalesTable.rootName)
+        return rows.map((r) => r.val)
+      }
+    )
+  }
+
+  static async findMapPoints(
+    companyId: number,
+    filters?: SalesFilterDto
+  ): Promise<SalesMapPoint[]> {
+    return executeQuery(
+      { context: this.context, method: 'findMapPoints', logParams: { companyId, filters } },
+      async () => {
+        const conditions = [
+          eq(areaCustomerSalesTable.companyId, companyId),
+          isNotNull(areaCustomerSalesTable.latitude),
+          isNotNull(areaCustomerSalesTable.longitude),
+        ]
+
+        if (filters?.reportDateFrom) conditions.push(gte(areaCustomerSalesTable.reportDate, filters.reportDateFrom))
+        if (filters?.reportDateTo)   conditions.push(lte(areaCustomerSalesTable.reportDate, filters.reportDateTo))
+        if (filters?.areaName)        conditions.push(eq(areaCustomerSalesTable.areaName, filters.areaName))
+        if (filters?.supervisorName)  conditions.push(eq(areaCustomerSalesTable.supervisorName, filters.supervisorName))
+        if (filters?.distributorName) conditions.push(eq(areaCustomerSalesTable.distributorName, filters.distributorName))
+        if (filters?.repName)         conditions.push(eq(areaCustomerSalesTable.repName, filters.repName))
+        if (filters?.rootName)        conditions.push(eq(areaCustomerSalesTable.rootName, filters.rootName))
+        if (filters?.outletType)      conditions.push(eq(areaCustomerSalesTable.outletType, filters.outletType))
+
+        const rows = await db
+          .select({
+            id:              areaCustomerSalesTable.id,
+            customerName:    areaCustomerSalesTable.customerName,
+            customerCode:    areaCustomerSalesTable.customerCode,
+            areaName:        areaCustomerSalesTable.areaName,
+            outletType:      areaCustomerSalesTable.outletType,
+            latitude:        areaCustomerSalesTable.latitude,
+            longitude:       areaCustomerSalesTable.longitude,
+            grossSaleAmount: areaCustomerSalesTable.grossSaleAmount,
+            netSaleAmount:   areaCustomerSalesTable.netSaleAmount,
+            repName:         areaCustomerSalesTable.repName,
+            distributorName: areaCustomerSalesTable.distributorName,
+            reportDate:      areaCustomerSalesTable.reportDate,
+          })
+          .from(areaCustomerSalesTable)
+          .where(and(...conditions))
+          .orderBy(areaCustomerSalesTable.areaName)
+
+        return rows as SalesMapPoint[]
       }
     )
   }
