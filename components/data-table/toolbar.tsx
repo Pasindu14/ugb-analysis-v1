@@ -359,7 +359,7 @@ export function DataTableToolbar<TData extends ExportableData>({
   const allItems = getAllItems ? getAllItems() : [];
 
   return (
-    <div className="flex flex-wrap items-center justify-between">
+    <div className="flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center md:justify-between">
       <div className="flex flex-1 flex-wrap items-center gap-2">
         {config.enableSearch && (
           <Input
@@ -385,7 +385,7 @@ export function DataTableToolbar<TData extends ExportableData>({
         )}
 
         {renderCustomFilters && setCustomFilters && (
-          <div className="flex items-center gap-2">
+          <div className="w-full">
             {renderCustomFilters(customFilters, setCustomFilters)}
           </div>
         )}
@@ -402,7 +402,7 @@ export function DataTableToolbar<TData extends ExportableData>({
         )}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-end gap-2">
         {customToolbarComponent}
 
         {config.enableExport && (

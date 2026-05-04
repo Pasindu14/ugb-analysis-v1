@@ -1,6 +1,6 @@
 import { db } from '@/db/drizzle'
 import { areaCustomerSalesTable } from '@/db/schema'
-import { eq, and, gte, lte, sql, isNotNull } from 'drizzle-orm'
+import { eq, and, gte, lte, sql, isNotNull, inArray } from 'drizzle-orm'
 
 export type ImportHistoryRow = {
   importFileName: string | null
@@ -211,8 +211,8 @@ export class SalesRepository {
     )
   }
 
-  // Deletes existing records for the period then bulk-inserts in batches.
-  // This is analytics import data, not a business entity — replace-by-period is intentional.
+  // Deletes existing records for the period+areas in the file, then bulk-inserts in batches.
+  // Scoped to only the area names present in `rows` so uploading one area never wipes another.
   static async replaceByPeriod(
     companyId: number,
     reportDate: string,
@@ -222,12 +222,17 @@ export class SalesRepository {
     return executeQuery(
       { context: this.context, method: 'replaceByPeriod', logParams: { companyId, reportDate, count: rows.length } },
       async () => {
-        await db.delete(areaCustomerSalesTable).where(
-          and(
-            eq(areaCustomerSalesTable.companyId, companyId),
-            eq(areaCustomerSalesTable.reportDate, reportDate),
+        const areaNames = [...new Set(rows.map((r) => r.areaName).filter(Boolean))]
+
+        if (areaNames.length > 0) {
+          await db.delete(areaCustomerSalesTable).where(
+            and(
+              eq(areaCustomerSalesTable.companyId, companyId),
+              eq(areaCustomerSalesTable.reportDate, reportDate),
+              inArray(areaCustomerSalesTable.areaName, areaNames),
+            )
           )
-        )
+        }
 
         if (rows.length === 0) return 0
 

@@ -14,11 +14,12 @@ import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 import { useSalesFilterOptions } from '../../hooks/sales.hooks'
 
-function currentMonthRange() {
-  const now = new Date()
-  const y = now.getFullYear()
-  const m = String(now.getMonth() + 1).padStart(2, '0')
-  const lastDay = new Date(y, now.getMonth() + 1, 0).getDate()
+function previousMonthRange() {
+  const now  = new Date()
+  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  const y    = prev.getFullYear()
+  const m    = String(prev.getMonth() + 1).padStart(2, '0')
+  const lastDay = new Date(y, prev.getMonth() + 1, 0).getDate()
   return {
     reportDateFrom: `${y}-${m}-01`,
     reportDateTo:   `${y}-${m}-${String(lastDay).padStart(2, '0')}`,
@@ -45,19 +46,19 @@ function FilterSelect({
   value,
   options,
   onChange,
-  width = 'w-[140px]',
+  desktopWidth = 'md:w-[140px]',
 }: {
   label: string
   value: string
   options: string[]
   onChange: (v: string) => void
-  width?: string
+  desktopWidth?: string
 }) {
   return (
     <div className="flex flex-col gap-1.5">
       <FieldLabel>{label}</FieldLabel>
       <Select value={value || ALL} onValueChange={(v) => onChange(v === ALL ? '' : v)}>
-        <SelectTrigger className={`h-8 text-xs ${width}`}>
+        <SelectTrigger className={`h-8 text-xs w-full ${desktopWidth}`}>
           <SelectValue placeholder={`All ${label}s`} />
         </SelectTrigger>
         <SelectContent>
@@ -82,7 +83,7 @@ export function SalesFilters({ filters, setFilters }: SalesFiltersProps) {
   useEffect(() => {
     if (initialized.current) return
     initialized.current = true
-    setFilters(currentMonthRange())
+    setFilters(previousMonthRange())
   }, [setFilters])
 
   function set(key: string, value: string | number | undefined) {
@@ -96,13 +97,13 @@ export function SalesFilters({ filters, setFilters }: SalesFiltersProps) {
   const activeCount = Object.values(filters).filter((v) => v != null && v !== '').length
 
   return (
-    <div className="flex flex-wrap items-end gap-x-3 gap-y-3 w-full py-2">
+    <div className="grid grid-cols-2 gap-3 md:flex md:flex-wrap md:items-end md:gap-x-3 md:gap-y-3 w-full py-2">
       {/* Period From */}
       <div className="flex flex-col gap-1.5">
         <FieldLabel>Period From</FieldLabel>
         <Input
           type="date"
-          className="h-8 text-xs w-[132px]"
+          className="h-8 text-xs w-full md:w-[132px]"
           value={(filters.reportDateFrom as string) ?? ''}
           onChange={(e) => set('reportDateFrom', e.target.value)}
         />
@@ -113,7 +114,7 @@ export function SalesFilters({ filters, setFilters }: SalesFiltersProps) {
         <FieldLabel>Period To</FieldLabel>
         <Input
           type="date"
-          className="h-8 text-xs w-[132px]"
+          className="h-8 text-xs w-full md:w-[132px]"
           value={(filters.reportDateTo as string) ?? ''}
           onChange={(e) => set('reportDateTo', e.target.value)}
         />
@@ -124,7 +125,7 @@ export function SalesFilters({ filters, setFilters }: SalesFiltersProps) {
         value={(filters.areaName as string) ?? ''}
         options={options?.areaNames ?? []}
         onChange={(v) => set('areaName', v)}
-        width="w-[130px]"
+        desktopWidth="md:w-[130px]"
       />
 
       <FilterSelect
@@ -132,7 +133,7 @@ export function SalesFilters({ filters, setFilters }: SalesFiltersProps) {
         value={(filters.distributorName as string) ?? ''}
         options={options?.distributorNames ?? []}
         onChange={(v) => set('distributorName', v)}
-        width="w-[148px]"
+        desktopWidth="md:w-[148px]"
       />
 
       <FilterSelect
@@ -140,7 +141,7 @@ export function SalesFilters({ filters, setFilters }: SalesFiltersProps) {
         value={(filters.supervisorName as string) ?? ''}
         options={options?.supervisorNames ?? []}
         onChange={(v) => set('supervisorName', v)}
-        width="w-[148px]"
+        desktopWidth="md:w-[148px]"
       />
 
       <FilterSelect
@@ -148,7 +149,7 @@ export function SalesFilters({ filters, setFilters }: SalesFiltersProps) {
         value={(filters.repName as string) ?? ''}
         options={options?.repNames ?? []}
         onChange={(v) => set('repName', v)}
-        width="w-[130px]"
+        desktopWidth="md:w-[130px]"
       />
 
       <FilterSelect
@@ -156,7 +157,7 @@ export function SalesFilters({ filters, setFilters }: SalesFiltersProps) {
         value={(filters.rootName as string) ?? ''}
         options={options?.rootNames ?? []}
         onChange={(v) => set('rootName', v)}
-        width="w-[120px]"
+        desktopWidth="md:w-[120px]"
       />
 
       <FilterSelect
@@ -164,7 +165,7 @@ export function SalesFilters({ filters, setFilters }: SalesFiltersProps) {
         value={(filters.outletType as string) ?? ''}
         options={options?.outletTypes ?? []}
         onChange={(v) => set('outletType', v)}
-        width="w-[148px]"
+        desktopWidth="md:w-[148px]"
       />
 
       {/* Gross Sale range */}
@@ -172,12 +173,10 @@ export function SalesFilters({ filters, setFilters }: SalesFiltersProps) {
         <FieldLabel>Gross Min</FieldLabel>
         <Input
           type="number"
-          className="h-8 text-xs w-[88px]"
+          className="h-8 text-xs w-full md:w-[88px]"
           placeholder="0"
           value={(filters.grossMin as string) ?? ''}
-          onChange={(e) =>
-            set('grossMin', e.target.value ? Number(e.target.value) : undefined)
-          }
+          onChange={(e) => set('grossMin', e.target.value ? Number(e.target.value) : undefined)}
         />
       </div>
 
@@ -185,12 +184,10 @@ export function SalesFilters({ filters, setFilters }: SalesFiltersProps) {
         <FieldLabel>Gross Max</FieldLabel>
         <Input
           type="number"
-          className="h-8 text-xs w-[88px]"
+          className="h-8 text-xs w-full md:w-[88px]"
           placeholder="∞"
           value={(filters.grossMax as string) ?? ''}
-          onChange={(e) =>
-            set('grossMax', e.target.value ? Number(e.target.value) : undefined)
-          }
+          onChange={(e) => set('grossMax', e.target.value ? Number(e.target.value) : undefined)}
         />
       </div>
 
@@ -199,12 +196,10 @@ export function SalesFilters({ filters, setFilters }: SalesFiltersProps) {
         <FieldLabel>Net Min</FieldLabel>
         <Input
           type="number"
-          className="h-8 text-xs w-[88px]"
+          className="h-8 text-xs w-full md:w-[88px]"
           placeholder="0"
           value={(filters.netMin as string) ?? ''}
-          onChange={(e) =>
-            set('netMin', e.target.value ? Number(e.target.value) : undefined)
-          }
+          onChange={(e) => set('netMin', e.target.value ? Number(e.target.value) : undefined)}
         />
       </div>
 
@@ -212,17 +207,15 @@ export function SalesFilters({ filters, setFilters }: SalesFiltersProps) {
         <FieldLabel>Net Max</FieldLabel>
         <Input
           type="number"
-          className="h-8 text-xs w-[88px]"
+          className="h-8 text-xs w-full md:w-[88px]"
           placeholder="∞"
           value={(filters.netMax as string) ?? ''}
-          onChange={(e) =>
-            set('netMax', e.target.value ? Number(e.target.value) : undefined)
-          }
+          onChange={(e) => set('netMax', e.target.value ? Number(e.target.value) : undefined)}
         />
       </div>
 
       {activeCount > 0 && (
-        <div className="flex items-end pb-0.5">
+        <div className="col-span-2 flex md:items-end pb-0.5">
           <Button
             variant="ghost"
             size="sm"

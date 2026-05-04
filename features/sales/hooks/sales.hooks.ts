@@ -153,7 +153,6 @@ export function useDeleteSalesImport() {
 
 export function useImportSales() {
   const queryClient = useQueryClient()
-  const { close }   = useImportDialog()
 
   return useMutation({
     mutationFn: async ({ file, reportDate }: { file: File; reportDate: string }) => {
@@ -169,7 +168,6 @@ export function useImportSales() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: salesKeys.all })
-      close()
       toast.success(`Imported ${data.inserted} records for ${data.reportDate}`)
     },
     onError: (err: Error) => {

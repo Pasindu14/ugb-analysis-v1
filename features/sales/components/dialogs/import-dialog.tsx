@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -18,18 +18,26 @@ import { useImportSales } from '../../hooks/sales.hooks'
 
 function getDefaultReportDate() {
   const now = new Date()
-  const y = now.getFullYear()
-  const m = String(now.getMonth() + 1).padStart(2, '0')
+  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  const y = prev.getFullYear()
+  const m = String(prev.getMonth() + 1).padStart(2, '0')
   return `${y}-${m}-01`
 }
 
 export function ImportSalesDialog() {
   const { isOpen, close } = useImportDialog()
-  const { mutate, isPending } = useImportSales()
+  const { mutate, isPending, isSuccess } = useImportSales()
   const inputRef = useRef<HTMLInputElement>(null)
   const [file, setFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [reportDate, setReportDate] = useState(getDefaultReportDate)
+
+  useEffect(() => {
+    if (!isSuccess) return
+    setFile(null)
+    setReportDate(getDefaultReportDate())
+    if (inputRef.current) inputRef.current.value = ''
+  }, [isSuccess])
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     setFile(e.target.files?.[0] ?? null)
