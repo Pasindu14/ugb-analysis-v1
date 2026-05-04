@@ -44,17 +44,6 @@ const data = {
       ],
     },
     /*     {
-      title: "Masters",
-      url: "#",
-      icon: Cog,
-      items: [
-        {
-          title: "Users",
-          url: "/users",
-        },
-      ],
-    }, */
-    /*     {
       title: "Models",
       url: "#",
       icon: Bot,
