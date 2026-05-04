@@ -1,7 +1,7 @@
 'use client'
 
 import { useQueryState } from 'nuqs'
-import { Map, MapPin } from 'lucide-react'
+import { Map, MapPin, Loader2 } from 'lucide-react'
 import { useSalesMapPoints } from '../../hooks/sales.hooks'
 import { OutletMap } from '../map/outlet-map-client'
 import { MapFilters } from '../map/map-filters'
@@ -86,9 +86,6 @@ export function SalesMapPage() {
 
           {/* Stats */}
           <div className="flex items-center justify-between md:justify-end gap-3 md:gap-4">
-            {isFetching && (
-              <span className="text-xs text-slate-400 animate-pulse">Loading…</span>
-            )}
             <div className="flex items-center gap-3 text-xs text-slate-400">
               <span className="flex items-center gap-1.5">
                 <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-500 ring-1 ring-white/30" />
@@ -119,9 +116,19 @@ export function SalesMapPage() {
       <div className="flex flex-col flex-1 min-h-0 rounded-xl border overflow-hidden bg-card shadow-sm">
         <MapFilters filters={filters} onChange={setFilters} />
 
-        <div className="flex-1 min-h-0">
+        <div className="relative flex-1 min-h-0">
           {filters.areaName ? (
-            <OutletMap points={points} />
+            <>
+              <OutletMap points={points} />
+              {isFetching && (
+                <div className="absolute inset-0 z-[1000] flex items-center justify-center bg-background/50 backdrop-blur-sm">
+                  <div className="flex items-center gap-2.5 rounded-xl bg-card px-5 py-3 shadow-lg ring-1 ring-border">
+                    <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
+                    <span className="text-sm font-medium">Loading area data…</span>
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
             <div className="flex h-full flex-col items-center justify-center gap-3 bg-muted/30 px-4 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-400/10 ring-1 ring-amber-400/25">
