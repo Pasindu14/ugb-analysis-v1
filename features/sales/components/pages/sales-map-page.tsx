@@ -58,61 +58,102 @@ export function SalesMapPage() {
 
   const saleCount   = points.filter((p) => Number(p.grossSaleAmount) > 0).length
   const noSaleCount = points.length - saleCount
+  const total       = points.length
+  const salePct     = total > 0 ? (saleCount / total) * 100   : 0
+  const noSalePct   = total > 0 ? (noSaleCount / total) * 100 : 0
 
   return (
     <div className="flex flex-col gap-3 md:gap-4 p-3 md:p-6 h-[calc(100vh-49px)]">
-      {/* Hero */}
-      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex-none">
+      {/* Hero — refined data-terminal aesthetic */}
+      <div className="relative overflow-hidden rounded-2xl bg-[radial-gradient(120%_120%_at_0%_0%,#1e293b_0%,#0f172a_55%,#020617_100%)] ring-1 ring-white/[0.06] shadow-[0_1px_0_0_rgba(255,255,255,0.04)_inset,0_24px_48px_-24px_rgba(0,0,0,0.6)] flex-none">
+        {/* Background atmosphere */}
         <div
-          className="absolute inset-0 opacity-[0.04]"
+          className="pointer-events-none absolute inset-0 opacity-[0.05]"
           style={{
             backgroundImage: 'radial-gradient(circle, rgba(255,255,255,1) 1px, transparent 1px)',
-            backgroundSize: '28px 28px',
+            backgroundSize: '24px 24px',
           }}
         />
-        <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl bg-gradient-to-b from-amber-400 to-amber-600" />
+        <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-amber-500/[0.08] blur-3xl" />
+        <div className="pointer-events-none absolute -left-12 -bottom-20 h-56 w-56 rounded-full bg-emerald-500/[0.04] blur-3xl" />
 
-        <div className="relative flex flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between md:px-8 md:py-6">
-          {/* Title */}
-          <div className="flex items-center gap-3 md:gap-4">
-            <div className="flex h-9 w-9 md:h-10 md:w-10 flex-shrink-0 items-center justify-center rounded-xl bg-amber-400/10 ring-1 ring-amber-400/25">
-              <Map className="h-4 w-4 md:h-5 md:w-5 text-amber-400" />
+        {/* Amber rail with backlight */}
+        <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-amber-300 via-amber-500 to-amber-700 shadow-[0_0_20px_rgba(251,191,36,0.45)]" />
+
+        <div className="relative flex flex-col gap-4 px-4 py-4 md:flex-row md:items-center md:justify-between md:gap-6 md:px-8 md:py-5">
+          {/* Brand */}
+          <div className="flex items-center gap-3.5 md:gap-4">
+            <div className="relative flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400/20 via-amber-500/[0.08] to-transparent ring-1 ring-amber-300/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+              <Map className="h-5 w-5 text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]" />
             </div>
-            <div>
-              <h1 className="text-lg md:text-xl font-bold tracking-tight text-white">Outlet Map</h1>
-              <p className="mt-0.5 text-xs text-slate-400">
+            <div className="min-w-0">
+              <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-amber-400/70">
+                Sales · Geo Intelligence
+              </p>
+              <h1 className="mt-0.5 text-lg md:text-xl font-bold tracking-tight text-white">
+                Outlet Map
+              </h1>
+              <p className="mt-0.5 text-xs text-slate-400/90 hidden md:block">
                 Geographic distribution of customer outlets
               </p>
             </div>
           </div>
 
-          {/* Stats */}
+          {/* Stat strip + CTA */}
           <div className="flex items-center justify-between md:justify-end gap-3 md:gap-4">
-            <div className="flex items-center gap-3 text-xs text-slate-400">
-              <span className="flex items-center gap-1.5">
-                <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-500 ring-1 ring-white/30" />
-                Has sale
-                <span className="font-semibold text-emerald-400 tabular-nums">
-                  {saleCount.toLocaleString()}
+            <div className="flex items-stretch divide-x divide-white/[0.06] rounded-xl bg-white/[0.02] ring-1 ring-white/[0.06] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] backdrop-blur-sm">
+              {/* Has sale */}
+              <div className="flex flex-col gap-1 px-3.5 py-2 md:px-4 md:py-2.5 min-w-[96px] md:min-w-[112px]">
+                <div className="flex items-center gap-1.5">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400/70 animate-ping" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400 ring-2 ring-emerald-400/20" />
+                  </span>
+                  <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    Has sale
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-base md:text-lg font-semibold text-emerald-400 tabular-nums">
+                    {saleCount.toLocaleString()}
+                  </span>
+                  <span className="text-[10px] font-medium text-emerald-400/60 tabular-nums">
+                    {Math.round(salePct)}%
+                  </span>
+                </div>
+              </div>
+
+              {/* No sale */}
+              <div className="flex flex-col gap-1 px-3.5 py-2 md:px-4 md:py-2.5 min-w-[96px] md:min-w-[112px]">
+                <div className="flex items-center gap-1.5">
+                  <span className="inline-flex h-1.5 w-1.5 rounded-full bg-rose-500 ring-2 ring-rose-500/20" />
+                  <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    No sale
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-base md:text-lg font-semibold text-rose-400 tabular-nums">
+                    {noSaleCount.toLocaleString()}
+                  </span>
+                  <span className="text-[10px] font-medium text-rose-400/60 tabular-nums">
+                    {Math.round(noSalePct)}%
+                  </span>
+                </div>
+              </div>
+
+              {/* Total */}
+              <div className="flex flex-col gap-1 px-3.5 py-2 md:px-4 md:py-2.5 min-w-[96px] md:min-w-[112px]">
+                <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-amber-400/70">
+                  Total Outlets
                 </span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-500 ring-1 ring-white/30" />
-                No sale
-                <span className="font-semibold text-red-400 tabular-nums">
-                  {noSaleCount.toLocaleString()}
+                <span className="text-base md:text-lg font-bold text-white tabular-nums">
+                  {total.toLocaleString()}
                 </span>
-              </span>
+              </div>
             </div>
-            <div className="text-right">
-              <p className="text-xl font-bold text-white tabular-nums">
-                {points.length.toLocaleString()}
-              </p>
-              <p className="text-[10px] text-slate-400 uppercase tracking-wider">Outlets</p>
-            </div>
+
             <Button
               size="sm"
-              variant="secondary"
               disabled={points.length === 0}
               onClick={() =>
                 exportOutletsToExcel(points, {
@@ -121,12 +162,28 @@ export function SalesMapPage() {
                   areaName:       filters.areaName,
                 })
               }
-              className="h-8 gap-1.5 bg-amber-400 text-slate-900 hover:bg-amber-300 disabled:bg-slate-700 disabled:text-slate-400"
+              className="h-9 gap-1.5 rounded-lg bg-gradient-to-b from-amber-300 to-amber-500 px-3.5 font-semibold text-slate-950 shadow-[0_4px_14px_-2px_rgba(251,191,36,0.45),inset_0_1px_0_rgba(255,255,255,0.5)] ring-1 ring-amber-300/60 transition-all hover:from-amber-200 hover:to-amber-400 hover:shadow-[0_6px_20px_-2px_rgba(251,191,36,0.55),inset_0_1px_0_rgba(255,255,255,0.6)] disabled:bg-none disabled:bg-slate-700 disabled:text-slate-500 disabled:shadow-none disabled:ring-slate-600"
             >
               <Download className="h-3.5 w-3.5" />
               Excel
             </Button>
           </div>
+        </div>
+
+        {/* Bottom split-meter — visualizes the percentage breakdown */}
+        <div className="relative h-[3px] w-full bg-white/[0.04]">
+          {total > 0 && (
+            <>
+              <div
+                className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500/80 to-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.5)] transition-all duration-500 ease-out"
+                style={{ width: `${salePct}%` }}
+              />
+              <div
+                className="absolute inset-y-0 bg-gradient-to-r from-rose-500/80 to-rose-400/80 transition-all duration-500 ease-out"
+                style={{ left: `${salePct}%`, width: `${noSalePct}%` }}
+              />
+            </>
+          )}
         </div>
       </div>
 
