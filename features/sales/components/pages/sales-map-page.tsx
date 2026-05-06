@@ -61,6 +61,14 @@ export function SalesMapPage() {
   const total       = points.length
   const salePct     = total > 0 ? (saleCount / total) * 100   : 0
   const noSalePct   = total > 0 ? (noSaleCount / total) * 100 : 0
+  const totalSale   = points.reduce((sum, p) => sum + (Number(p.grossSaleAmount) || 0), 0)
+
+  function compactCurrency(n: number) {
+    if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(2)}B`
+    if (n >= 1_000_000)     return `${(n / 1_000_000).toFixed(2)}M`
+    if (n >= 1_000)         return `${(n / 1_000).toFixed(1)}K`
+    return n.toFixed(0)
+  }
 
   return (
     <div className="flex flex-col gap-3 md:gap-4 p-3 md:p-6 h-[calc(100vh-49px)]">
@@ -141,13 +149,29 @@ export function SalesMapPage() {
                 </div>
               </div>
 
-              {/* Total */}
-              <div className="flex flex-col gap-1 px-3.5 py-2 md:px-4 md:py-2.5 min-w-[96px] md:min-w-[112px]">
-                <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-amber-400/70">
-                  Total Outlets
+              {/* Total Outlets */}
+              <div className="flex flex-col gap-1 px-3.5 py-2 md:px-4 md:py-2.5 min-w-[88px] md:min-w-[104px]">
+                <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  Outlets
                 </span>
-                <span className="text-base md:text-lg font-bold text-white tabular-nums">
+                <span className="text-base md:text-lg font-semibold text-white tabular-nums">
                   {total.toLocaleString()}
+                </span>
+              </div>
+
+              {/* Total Sale — accent cell */}
+              <div
+                className="relative flex flex-col gap-1 px-3.5 py-2 md:px-4 md:py-2.5 min-w-[100px] md:min-w-[120px] bg-gradient-to-br from-amber-500/[0.08] to-transparent"
+                title={totalSale.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="inline-block h-1 w-1 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.7)]" />
+                  <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-amber-400/80">
+                    Total Sale
+                  </span>
+                </div>
+                <span className="text-base md:text-lg font-bold text-amber-300 tabular-nums drop-shadow-[0_0_8px_rgba(251,191,36,0.25)]">
+                  {compactCurrency(totalSale)}
                 </span>
               </div>
             </div>
