@@ -14,6 +14,12 @@ export default {
       const publicPaths = ["/sign-in", "/login"]
       const isPublic = publicPaths.includes(path)
 
+      // Root always redirects — authenticated users go to the app, guests go to sign-in
+      if (path === "/") {
+        if (isLoggedIn) return Response.redirect(new URL("/sales/map", nextUrl))
+        return Response.redirect(new URL("/sign-in", nextUrl))
+      }
+
       if (isPublic) {
         // Send authenticated users away from auth pages
         if (isLoggedIn) return Response.redirect(new URL("/sales/map", nextUrl))
@@ -23,6 +29,17 @@ export default {
       // All other routes require authentication
       if (!isLoggedIn) {
         return Response.redirect(new URL("/sign-in", nextUrl))
+      }
+
+      // /sales (table/import) is admin-only; redirect regular users to the map
+      const isSalesAdminRoute =
+        path === "/sales" || (path.startsWith("/sales/") && !path.startsWith("/sales/map"))
+      if (isSalesAdminRoute) {
+        const role = auth?.user?.role
+        const isAdmin = role !== "employee"
+        if (!isAdmin) {
+          return Response.redirect(new URL("/sales/map", nextUrl))
+        }
       }
 
       return true
