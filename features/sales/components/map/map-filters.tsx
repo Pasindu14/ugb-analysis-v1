@@ -38,7 +38,7 @@ function FilterSelect({
   loading?: boolean
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-1.5 min-w-0 md:flex-1">
       <FieldLabel>{label}</FieldLabel>
       <Select value={value || ALL} onValueChange={(v) => onChange(v === ALL ? '' : v)} disabled={loading}>
         <SelectTrigger className="h-8 text-xs w-full">
@@ -67,7 +67,7 @@ function AreaSelect({
   loading?: boolean
 }) {
   return (
-    <div className="flex flex-col gap-1.5 col-span-2 md:col-span-1">
+    <div className="flex flex-col gap-1.5 col-span-2 md:col-span-1 min-w-0 md:flex-1">
       <div className="flex items-center gap-1">
         <FieldLabel>Area</FieldLabel>
         <span className="text-[10px] font-semibold text-amber-500">*</span>
@@ -125,8 +125,8 @@ export function MapFilters({ filters, onChange }: MapFiltersProps) {
   const hasArea = !!filters.areaName
 
   return (
-    <div className="grid grid-cols-2 md:flex md:flex-wrap md:items-end gap-x-3 gap-y-3 border-b px-3 md:px-6 py-3 bg-card flex-none">
-      <div className="flex flex-col gap-1.5">
+    <div className="grid grid-cols-2 md:flex md:flex-nowrap md:items-end gap-x-3 gap-y-3 border-b px-3 md:px-6 py-3 bg-card flex-none w-full">
+      <div className="flex flex-col gap-1.5 min-w-0 md:flex-1">
         <FieldLabel>Period From</FieldLabel>
         <Input
           type="date"
@@ -136,7 +136,7 @@ export function MapFilters({ filters, onChange }: MapFiltersProps) {
         />
       </div>
 
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1.5 min-w-0 md:flex-1">
         <FieldLabel>Period To</FieldLabel>
         <Input
           type="date"
@@ -194,7 +194,7 @@ export function MapFilters({ filters, onChange }: MapFiltersProps) {
       )}
 
       {activeCount > 0 && (
-        <div className="col-span-2 flex md:items-end pb-0.5">
+        <div className="col-span-2 flex md:items-end pb-0.5 md:flex-none md:shrink-0">
           <Button
             variant="ghost"
             size="sm"

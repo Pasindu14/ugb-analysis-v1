@@ -199,7 +199,9 @@ export class SalesRepository {
             grossSaleAmount: areaCustomerSalesTable.grossSaleAmount,
             netSaleAmount:   areaCustomerSalesTable.netSaleAmount,
             repName:         areaCustomerSalesTable.repName,
+            supervisorName:  areaCustomerSalesTable.supervisorName,
             distributorName: areaCustomerSalesTable.distributorName,
+            rootName:        areaCustomerSalesTable.rootName,
             reportDate:      areaCustomerSalesTable.reportDate,
           })
           .from(areaCustomerSalesTable)

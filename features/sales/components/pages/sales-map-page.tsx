@@ -1,10 +1,12 @@
 'use client'
 
 import { useQueryState } from 'nuqs'
-import { Map, MapPin, Loader2 } from 'lucide-react'
+import { Map, MapPin, Loader2, Download } from 'lucide-react'
 import { useSalesMapPoints } from '../../hooks/sales.hooks'
 import { OutletMap } from '../map/outlet-map-client'
 import { MapFilters } from '../map/map-filters'
+import { Button } from '@/components/ui/button'
+import { exportOutletsToExcel } from '../../utils/export-outlets'
 import type { SalesFilterDto } from '../../schemas/sales.schema'
 
 function previousMonthRange() {
@@ -108,6 +110,22 @@ export function SalesMapPage() {
               </p>
               <p className="text-[10px] text-slate-400 uppercase tracking-wider">Outlets</p>
             </div>
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={points.length === 0}
+              onClick={() =>
+                exportOutletsToExcel(points, {
+                  reportDateFrom: filters.reportDateFrom,
+                  reportDateTo:   filters.reportDateTo,
+                  areaName:       filters.areaName,
+                })
+              }
+              className="h-8 gap-1.5 bg-amber-400 text-slate-900 hover:bg-amber-300 disabled:bg-slate-700 disabled:text-slate-400"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Excel
+            </Button>
           </div>
         </div>
       </div>

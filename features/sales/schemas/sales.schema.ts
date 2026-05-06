@@ -46,6 +46,8 @@ export type SalesMapPoint = {
   grossSaleAmount: string
   netSaleAmount:   string
   repName:         string
+  supervisorName:  string
   distributorName: string
+  rootName:        string
   reportDate:      string
 }
