@@ -2,7 +2,7 @@
 
 import { useQueryState } from 'nuqs'
 import { Map, MapPin, Loader2, Download } from 'lucide-react'
-import { useSalesMapPoints } from '../../hooks/sales.hooks'
+import { useSalesMapPoints, useSalesMissingLocationSummary } from '../../hooks/sales.hooks'
 import { OutletMap } from '../map/outlet-map-client'
 import { MapFilters } from '../map/map-filters'
 import { Button } from '@/components/ui/button'
@@ -55,13 +55,14 @@ export function SalesMapPage() {
     setOutletType(next.outletType ?? '')
   }
   const { data: points = [], isFetching } = useSalesMapPoints(filters)
+  const { data: missingLoc } = useSalesMissingLocationSummary(filters)
 
   const saleCount   = points.filter((p) => Number(p.grossSaleAmount) > 0).length
   const noSaleCount = points.length - saleCount
   const total       = points.length
   const salePct     = total > 0 ? (saleCount / total) * 100   : 0
   const noSalePct   = total > 0 ? (noSaleCount / total) * 100 : 0
-  const totalSale   = points.reduce((sum, p) => sum + (Number(p.grossSaleAmount) || 0), 0)
+  const totalSale   = points.reduce((sum, p) => sum + (Number(p.grossSaleAmount) || 0), 0) + (missingLoc?.totalSale ?? 0)
 
   function compactCurrency(n: number) {
     if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(2)}B`
@@ -158,6 +159,29 @@ export function SalesMapPage() {
                   {total.toLocaleString()}
                 </span>
               </div>
+
+              {/* No Location */}
+              {missingLoc && missingLoc.count > 0 && (
+                <div className="flex flex-col gap-1 px-3.5 py-2 md:px-4 md:py-2.5 min-w-[100px] md:min-w-[120px]">
+                  <div className="flex items-center gap-1.5">
+                    <span className="inline-flex h-1.5 w-1.5 rounded-full bg-slate-400 ring-2 ring-slate-400/20" />
+                    <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                      No Location
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-base md:text-lg font-semibold text-slate-300 tabular-nums">
+                      {missingLoc.count.toLocaleString()}
+                    </span>
+                  </div>
+                  <span
+                    className="text-[10px] text-slate-500 tabular-nums leading-none"
+                    title={missingLoc.totalSale.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  >
+                    {compactCurrency(missingLoc.totalSale)}
+                  </span>
+                </div>
+              )}
 
               {/* Total Sale — accent cell */}
               <div

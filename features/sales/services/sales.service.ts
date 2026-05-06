@@ -1,6 +1,6 @@
 import { executeService } from '@/lib/services/wrapper'
 import { SalesRepository, type ImportHistoryRow } from '../repositories/sales.repository'
-import type { SalesFilterDto, SalesFilterOptions, SalesMapPoint, SalesAreaFilterOptions } from '../schemas/sales.schema'
+import type { SalesFilterDto, SalesFilterOptions, SalesMapPoint, SalesAreaFilterOptions, MissingLocationSummary } from '../schemas/sales.schema'
 import type { AreaCustomerSale, AreaCustomerSaleInsert } from '@/db/schema'
 import type { OffsetPagination, OffsetPaginatedResult } from '@/lib/queries/pagination'
 
@@ -49,6 +49,16 @@ export class SalesService {
     return executeService(
       { context: this.context, method: 'getMapPoints', logParams: { companyId } },
       async () => SalesRepository.findMapPoints(companyId, filters)
+    )
+  }
+
+  static async getMissingLocationSummary(
+    companyId: number,
+    filters?: SalesFilterDto
+  ): Promise<MissingLocationSummary> {
+    return executeService(
+      { context: this.context, method: 'getMissingLocationSummary', logParams: { companyId } },
+      async () => SalesRepository.findMissingLocationSummary(companyId, filters)
     )
   }
 

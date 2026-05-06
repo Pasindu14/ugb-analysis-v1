@@ -35,6 +35,11 @@ export type SalesAreaFilterOptions = {
   outletTypes:      string[]
 }
 
+export type MissingLocationSummary = {
+  count:     number
+  totalSale: number
+}
+
 export type SalesMapPoint = {
   id:              number
   customerName:    string

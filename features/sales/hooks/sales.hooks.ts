@@ -4,12 +4,13 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tansta
 import { toast } from 'sonner'
 import { getSalesAction, getSalesFilterOptionsAction } from '../actions/sales.actions'
 import { getSalesMapPointsAction } from '../actions/get-sales-map-points.action'
+import { getSalesMissingLocationSummaryAction } from '../actions/get-sales-missing-location-summary.action'
 import { getSalesRoutesByAreaAction } from '../actions/get-sales-routes-by-area.action'
 import { getSalesFilterOptionsByAreaAction } from '../actions/get-sales-filter-options-by-area.action'
 import { getSalesImportHistoryAction } from '../actions/get-sales-import-history.action'
 import { deleteSalesImportAction } from '../actions/delete-sales-import.action'
 import { useImportDialog, useManageImportsDialog } from '../store'
-import type { SalesFilterDto, SalesMapPoint, SalesAreaFilterOptions } from '../schemas/sales.schema'
+import type { SalesFilterDto, SalesMapPoint, SalesAreaFilterOptions, MissingLocationSummary } from '../schemas/sales.schema'
 import type { ImportHistoryRow } from '../repositories/sales.repository'
 
 export const salesKeys = {
@@ -111,6 +112,19 @@ export function useSalesMapPoints(filters: SalesFilterDto) {
     queryKey: salesKeys.list({ type: 'map', filters }),
     queryFn: async (): Promise<SalesMapPoint[]> => {
       const result = await getSalesMapPointsAction({ filters })
+      if (!result.success) throw new Error(result.error)
+      return result.data
+    },
+    enabled: !!filters.areaName,
+    placeholderData: keepPreviousData,
+  })
+}
+
+export function useSalesMissingLocationSummary(filters: SalesFilterDto) {
+  return useQuery({
+    queryKey: salesKeys.list({ type: 'missing-location', filters }),
+    queryFn: async (): Promise<MissingLocationSummary> => {
+      const result = await getSalesMissingLocationSummaryAction({ filters })
       if (!result.success) throw new Error(result.error)
       return result.data
     },

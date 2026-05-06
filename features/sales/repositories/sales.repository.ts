@@ -1,6 +1,6 @@
 import { db } from '@/db/drizzle'
 import { areaCustomerSalesTable } from '@/db/schema'
-import { eq, and, gte, lte, sql, isNotNull, inArray } from 'drizzle-orm'
+import { eq, and, gte, lte, sql, isNotNull, isNull, or, inArray } from 'drizzle-orm'
 
 export type ImportHistoryRow = {
   importFileName: string | null
@@ -17,7 +17,7 @@ import {
   DEFAULT_PAGE_SIZE,
 } from '@/lib/queries/pagination'
 import type { AreaCustomerSale, AreaCustomerSaleInsert } from '@/db/schema'
-import type { SalesFilterDto, SalesFilterOptions, SalesMapPoint, SalesAreaFilterOptions } from '../schemas/sales.schema'
+import type { SalesFilterDto, SalesFilterOptions, SalesMapPoint, SalesAreaFilterOptions, MissingLocationSummary } from '../schemas/sales.schema'
 
 const BATCH_SIZE = 500
 
@@ -209,6 +209,40 @@ export class SalesRepository {
           .orderBy(areaCustomerSalesTable.areaName)
 
         return rows as SalesMapPoint[]
+      }
+    )
+  }
+
+  static async findMissingLocationSummary(
+    companyId: number,
+    filters?: SalesFilterDto
+  ): Promise<MissingLocationSummary> {
+    return executeQuery(
+      { context: this.context, method: 'findMissingLocationSummary', logParams: { companyId, filters } },
+      async () => {
+        const conditions = [
+          eq(areaCustomerSalesTable.companyId, companyId),
+          or(isNull(areaCustomerSalesTable.latitude), isNull(areaCustomerSalesTable.longitude))!,
+        ]
+
+        if (filters?.reportDateFrom) conditions.push(gte(areaCustomerSalesTable.reportDate, filters.reportDateFrom))
+        if (filters?.reportDateTo)   conditions.push(lte(areaCustomerSalesTable.reportDate, filters.reportDateTo))
+        if (filters?.areaName)        conditions.push(eq(areaCustomerSalesTable.areaName, filters.areaName))
+        if (filters?.supervisorName)  conditions.push(eq(areaCustomerSalesTable.supervisorName, filters.supervisorName))
+        if (filters?.distributorName) conditions.push(eq(areaCustomerSalesTable.distributorName, filters.distributorName))
+        if (filters?.repName)         conditions.push(eq(areaCustomerSalesTable.repName, filters.repName))
+        if (filters?.rootName)        conditions.push(eq(areaCustomerSalesTable.rootName, filters.rootName))
+        if (filters?.outletType)      conditions.push(eq(areaCustomerSalesTable.outletType, filters.outletType))
+
+        const [row] = await db
+          .select({
+            count:     sql<number>`count(*)::int`,
+            totalSale: sql<number>`coalesce(sum(${areaCustomerSalesTable.grossSaleAmount}::numeric), 0)`,
+          })
+          .from(areaCustomerSalesTable)
+          .where(and(...conditions))
+
+        return { count: row?.count ?? 0, totalSale: Number(row?.totalSale ?? 0) }
       }
     )
   }
