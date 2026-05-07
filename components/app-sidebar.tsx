@@ -19,7 +19,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const salesSubItems = [
     ...(isAdmin ? [{ title: "Area Customer Sales", url: "/sales" }] : []),
-    { title: "Outlet Map", url: "/sales/map" },
+    { title: "Billing Map", url: "/sales/map" },
   ];
 
   const navMain = [

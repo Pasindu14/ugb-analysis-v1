@@ -100,7 +100,7 @@ export function SalesMapPage() {
                 Sales · Geo Intelligence
               </p>
               <h1 className="mt-0.5 text-lg md:text-xl font-bold tracking-tight text-white">
-                Outlet Map
+                Billing Map
               </h1>
               <p className="mt-0.5 text-xs text-slate-400/90 hidden md:block">
                 Geographic distribution of customer outlets
@@ -153,7 +153,7 @@ export function SalesMapPage() {
               {/* Total Outlets */}
               <div className="flex flex-col gap-1 px-3.5 py-2 md:px-4 md:py-2.5 min-w-[88px] md:min-w-[104px]">
                 <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  Outlets
+                  Locations
                 </span>
                 <span className="text-base md:text-lg font-semibold text-white tabular-nums">
                   {total.toLocaleString()}
