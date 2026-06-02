@@ -36,8 +36,9 @@ export type SalesAreaFilterOptions = {
 }
 
 export type MissingLocationSummary = {
-  count:     number
-  totalSale: number
+  count:         number
+  countWithSale: number
+  totalSale:     number
 }
 
 export type SalesMapPoint = {

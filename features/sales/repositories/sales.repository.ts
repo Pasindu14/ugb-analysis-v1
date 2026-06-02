@@ -236,13 +236,18 @@ export class SalesRepository {
 
         const [row] = await db
           .select({
-            count:     sql<number>`count(*)::int`,
-            totalSale: sql<number>`coalesce(sum(${areaCustomerSalesTable.grossSaleAmount}::numeric), 0)`,
+            count:         sql<number>`count(*)::int`,
+            countWithSale: sql<number>`count(*) filter (where ${areaCustomerSalesTable.grossSaleAmount}::numeric > 0)::int`,
+            totalSale:     sql<number>`coalesce(sum(${areaCustomerSalesTable.grossSaleAmount}::numeric), 0)`,
           })
           .from(areaCustomerSalesTable)
           .where(and(...conditions))
 
-        return { count: row?.count ?? 0, totalSale: Number(row?.totalSale ?? 0) }
+        return {
+          count:         row?.count         ?? 0,
+          countWithSale: row?.countWithSale ?? 0,
+          totalSale:     Number(row?.totalSale ?? 0),
+        }
       }
     )
   }

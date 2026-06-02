@@ -57,11 +57,16 @@ export function SalesMapPage() {
   const { data: points = [], isFetching } = useSalesMapPoints(filters)
   const { data: missingLoc } = useSalesMissingLocationSummary(filters)
 
-  const saleCount   = points.filter((p) => Number(p.grossSaleAmount) > 0).length
-  const noSaleCount = points.length - saleCount
+  const missingLocCount      = missingLoc?.count         ?? 0
+  const missingLocSaleCount  = missingLoc?.countWithSale ?? 0
+  const locSaleCount = points.filter((p) => Number(p.grossSaleAmount) > 0).length
+  const saleCount   = locSaleCount + missingLocSaleCount
+  const noSaleCount = points.length - locSaleCount
   const total       = points.length
-  const salePct     = total > 0 ? (saleCount / total) * 100   : 0
-  const noSalePct   = total > 0 ? (noSaleCount / total) * 100 : 0
+  const grandTotal  = total + missingLocCount
+  const salePct     = grandTotal > 0 ? (saleCount   / grandTotal) * 100 : 0
+  const noSalePct   = grandTotal > 0 ? (noSaleCount / grandTotal) * 100 : 0
+  const missingLocSalePct = grandTotal > 0 ? (missingLocSaleCount / grandTotal) * 100 : 0
   const totalSale   = points.reduce((sum, p) => sum + (Number(p.grossSaleAmount) || 0), 0) + (missingLoc?.totalSale ?? 0)
 
   function compactCurrency(n: number) {
@@ -150,6 +155,18 @@ export function SalesMapPage() {
                 </div>
               </div>
 
+              {/* Total incl. No Location */}
+              {missingLocCount > 0 && (
+                <div className="flex flex-col gap-1 px-3.5 py-2 md:px-4 md:py-2.5 min-w-[100px] md:min-w-[120px]">
+                  <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-sky-500/80">
+                    Total (w/ No Loc)
+                  </span>
+                  <span className="text-base md:text-lg font-semibold text-sky-300 tabular-nums">
+                    {grandTotal.toLocaleString()}
+                  </span>
+                </div>
+              )}
+
               {/* Total Outlets */}
               <div className="flex flex-col gap-1 px-3.5 py-2 md:px-4 md:py-2.5 min-w-[88px] md:min-w-[104px]">
                 <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -173,6 +190,11 @@ export function SalesMapPage() {
                     <span className="text-base md:text-lg font-semibold text-slate-300 tabular-nums">
                       {missingLoc.count.toLocaleString()}
                     </span>
+                    {missingLocSaleCount > 0 && (
+                      <span className="text-[10px] font-medium text-emerald-400/70 tabular-nums">
+                        {Math.round(missingLocSalePct)}%
+                      </span>
+                    )}
                   </div>
                   <span
                     className="text-[10px] text-slate-500 tabular-nums leading-none"
