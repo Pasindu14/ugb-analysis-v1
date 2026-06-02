@@ -1,6 +1,6 @@
 import { db } from '@/db/drizzle'
 import { areaCustomerSalesTable } from '@/db/schema'
-import { eq, and, gte, lte, sql, isNotNull, isNull, or, inArray, groupBy } from 'drizzle-orm'
+import { eq, and, gte, lte, sql, isNotNull, isNull, or, inArray } from 'drizzle-orm'
 
 export type ImportHistoryRow = {
   importFileName: string | null
