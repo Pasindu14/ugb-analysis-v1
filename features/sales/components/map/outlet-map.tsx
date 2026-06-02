@@ -67,8 +67,10 @@ export function OutletMap({ points }: OutletMapProps) {
                 <span>{p.repName}</span>
                 <span className="font-medium">Distributor</span>
                 <span>{p.distributorName}</span>
+                <span className="font-medium">Bills</span>
+                <span>{p.billCount}</span>
                 <span className="font-medium">Period</span>
-                <span>{p.reportDate}</span>
+                <span>{p.billCount > 1 ? `${p.firstDate} → ${p.lastDate}` : p.firstDate}</span>
               </div>
               <div className="mt-2 pt-2 border-t border-gray-100 grid grid-cols-2 gap-1">
                 <div>

@@ -67,7 +67,12 @@ export function SalesMapPage() {
   const salePct     = grandTotal > 0 ? (saleCount   / grandTotal) * 100 : 0
   const noSalePct   = grandTotal > 0 ? (noSaleCount / grandTotal) * 100 : 0
   const missingLocSalePct = grandTotal > 0 ? (missingLocSaleCount / grandTotal) * 100 : 0
-  const totalSale   = points.reduce((sum, p) => sum + (Number(p.grossSaleAmount) || 0), 0) + (missingLoc?.totalSale ?? 0)
+  const totalSale      = points.reduce((sum, p) => sum + (Number(p.grossSaleAmount) || 0), 0) + (missingLoc?.totalSale ?? 0)
+  const totalBillsArea   = points.reduce((sum, p) => sum + p.billCount, 0)
+  const totalSaleArea    = points.reduce((sum, p) => sum + (Number(p.grossSaleAmount) || 0), 0)
+  const avgPerBill       = totalBillsArea > 0 ? totalSaleArea / totalBillsArea : 0
+  const avgBillsPerOutlet = total > 0 ? totalBillsArea / total : 0
+  const multiBillOutlets  = points.filter((p) => p.billCount > 1).length
 
   function compactCurrency(n: number) {
     if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(2)}B`
@@ -201,6 +206,62 @@ export function SalesMapPage() {
                     title={missingLoc.totalSale.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   >
                     {compactCurrency(missingLoc.totalSale)}
+                  </span>
+                </div>
+              )}
+
+              {/* Total Bills */}
+              {filters.areaName && totalBillsArea > 0 && (
+                <div className="flex flex-col gap-1 px-3.5 py-2 md:px-4 md:py-2.5 min-w-[88px] md:min-w-[104px]">
+                  <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    Total Bills
+                  </span>
+                  <span className="text-base md:text-lg font-semibold text-white tabular-nums">
+                    {totalBillsArea.toLocaleString()}
+                  </span>
+                </div>
+              )}
+
+              {/* Avg Bills / Outlet */}
+              {filters.areaName && avgBillsPerOutlet > 0 && (
+                <div className="flex flex-col gap-1 px-3.5 py-2 md:px-4 md:py-2.5 min-w-[88px] md:min-w-[104px]">
+                  <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    Avg Bills / Outlet
+                  </span>
+                  <span className="text-base md:text-lg font-semibold text-white tabular-nums">
+                    {avgBillsPerOutlet.toFixed(1)}
+                  </span>
+                </div>
+              )}
+
+              {/* Multi-Bill Outlets */}
+              {filters.areaName && multiBillOutlets > 0 && (
+                <div className="flex flex-col gap-1 px-3.5 py-2 md:px-4 md:py-2.5 min-w-[100px] md:min-w-[116px]">
+                  <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    Multi-Bill Outlets
+                  </span>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-base md:text-lg font-semibold text-white tabular-nums">
+                      {multiBillOutlets.toLocaleString()}
+                    </span>
+                    <span className="text-[10px] font-medium text-slate-400/70 tabular-nums">
+                      {total > 0 ? Math.round((multiBillOutlets / total) * 100) : 0}%
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Avg per Bill — only when area is selected */}
+              {filters.areaName && avgPerBill > 0 && (
+                <div
+                  className="flex flex-col gap-1 px-3.5 py-2 md:px-4 md:py-2.5 min-w-[100px] md:min-w-[120px]"
+                  title={avgPerBill.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                >
+                  <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-violet-400/80">
+                    Avg Bill Value
+                  </span>
+                  <span className="text-base md:text-lg font-semibold text-violet-300 tabular-nums">
+                    {compactCurrency(avgPerBill)}
                   </span>
                 </div>
               )}

@@ -1,6 +1,6 @@
 import { db } from '@/db/drizzle'
 import { areaCustomerSalesTable } from '@/db/schema'
-import { eq, and, gte, lte, sql, isNotNull, isNull, or, inArray } from 'drizzle-orm'
+import { eq, and, gte, lte, sql, isNotNull, isNull, or, inArray, groupBy } from 'drizzle-orm'
 
 export type ImportHistoryRow = {
   importFileName: string | null
@@ -189,24 +189,31 @@ export class SalesRepository {
 
         const rows = await db
           .select({
-            id:              areaCustomerSalesTable.id,
-            customerName:    areaCustomerSalesTable.customerName,
+            id:              sql<number>`min(${areaCustomerSalesTable.id})::int`,
+            customerName:    sql<string>`min(${areaCustomerSalesTable.customerName})`,
             customerCode:    areaCustomerSalesTable.customerCode,
-            areaName:        areaCustomerSalesTable.areaName,
-            outletType:      areaCustomerSalesTable.outletType,
+            areaName:        sql<string>`min(${areaCustomerSalesTable.areaName})`,
+            outletType:      sql<string>`min(${areaCustomerSalesTable.outletType})`,
             latitude:        areaCustomerSalesTable.latitude,
             longitude:       areaCustomerSalesTable.longitude,
-            grossSaleAmount: areaCustomerSalesTable.grossSaleAmount,
-            netSaleAmount:   areaCustomerSalesTable.netSaleAmount,
-            repName:         areaCustomerSalesTable.repName,
-            supervisorName:  areaCustomerSalesTable.supervisorName,
-            distributorName: areaCustomerSalesTable.distributorName,
-            rootName:        areaCustomerSalesTable.rootName,
-            reportDate:      areaCustomerSalesTable.reportDate,
+            grossSaleAmount: sql<string>`sum(${areaCustomerSalesTable.grossSaleAmount})::text`,
+            netSaleAmount:   sql<string>`sum(${areaCustomerSalesTable.netSaleAmount})::text`,
+            repName:         sql<string>`min(${areaCustomerSalesTable.repName})`,
+            supervisorName:  sql<string>`min(${areaCustomerSalesTable.supervisorName})`,
+            distributorName: sql<string>`min(${areaCustomerSalesTable.distributorName})`,
+            rootName:        sql<string>`min(${areaCustomerSalesTable.rootName})`,
+            billCount:       sql<number>`count(*)::int`,
+            firstDate:       sql<string>`min(${areaCustomerSalesTable.reportDate})::text`,
+            lastDate:        sql<string>`max(${areaCustomerSalesTable.reportDate})::text`,
           })
           .from(areaCustomerSalesTable)
           .where(and(...conditions))
-          .orderBy(areaCustomerSalesTable.areaName)
+          .groupBy(
+            areaCustomerSalesTable.customerCode,
+            areaCustomerSalesTable.latitude,
+            areaCustomerSalesTable.longitude,
+          )
+          .orderBy(sql`min(${areaCustomerSalesTable.areaName})`)
 
         return rows as SalesMapPoint[]
       }

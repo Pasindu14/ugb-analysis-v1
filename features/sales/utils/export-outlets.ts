@@ -19,46 +19,24 @@ interface AggregatedOutlet {
   totalGross:      number
   totalNet:        number
   billCount:       number
-  reportDates:     string[]
 }
 
 function aggregateByOutlet(points: SalesMapPoint[]): AggregatedOutlet[] {
-  const map = new Map<number, AggregatedOutlet>()
-
-  for (const p of points) {
-    const gross = Number(p.grossSaleAmount) || 0
-    const net   = Number(p.netSaleAmount)   || 0
-    const hasBill = gross > 0
-
-    const existing = map.get(p.customerCode)
-    if (existing) {
-      existing.totalGross += gross
-      existing.totalNet   += net
-      if (hasBill && !existing.reportDates.includes(p.reportDate)) {
-        existing.reportDates.push(p.reportDate)
-        existing.billCount = existing.reportDates.length
-      }
-    } else {
-      map.set(p.customerCode, {
-        customerCode:    p.customerCode,
-        customerName:    p.customerName,
-        areaName:        p.areaName,
-        rootName:        p.rootName,
-        outletType:      p.outletType,
-        repName:         p.repName,
-        supervisorName:  p.supervisorName,
-        distributorName: p.distributorName,
-        totalGross:      gross,
-        totalNet:        net,
-        billCount:       hasBill ? 1 : 0,
-        reportDates:     hasBill ? [p.reportDate] : [],
-      })
-    }
-  }
-
-  return Array.from(map.values()).sort((a, b) =>
-    a.areaName.localeCompare(b.areaName) || a.customerName.localeCompare(b.customerName),
-  )
+  return points
+    .map((p) => ({
+      customerCode:    p.customerCode,
+      customerName:    p.customerName,
+      areaName:        p.areaName,
+      rootName:        p.rootName,
+      outletType:      p.outletType,
+      repName:         p.repName,
+      supervisorName:  p.supervisorName,
+      distributorName: p.distributorName,
+      totalGross:      Number(p.grossSaleAmount) || 0,
+      totalNet:        Number(p.netSaleAmount)   || 0,
+      billCount:       p.billCount,
+    }))
+    .sort((a, b) => a.areaName.localeCompare(b.areaName) || a.customerName.localeCompare(b.customerName))
 }
 
 export async function exportOutletsToExcel(points: SalesMapPoint[], ctx: ExportContext) {

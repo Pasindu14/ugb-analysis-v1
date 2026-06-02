@@ -55,5 +55,7 @@ export type SalesMapPoint = {
   supervisorName:  string
   distributorName: string
   rootName:        string
-  reportDate:      string
+  billCount:       number
+  firstDate:       string
+  lastDate:        string
 }
