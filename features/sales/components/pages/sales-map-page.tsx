@@ -1,7 +1,8 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useQueryState } from 'nuqs'
-import { Map, MapPin, Loader2, Download } from 'lucide-react'
+import { Map, MapPin, Loader2, Download, Maximize2, Minimize2, ChevronUp, BarChart3 } from 'lucide-react'
 import { useSalesMapPoints, useSalesMissingLocationSummary } from '../../hooks/sales.hooks'
 import { OutletMap } from '../map/outlet-map-client'
 import { MapFilters } from '../map/map-filters'
@@ -32,6 +33,25 @@ export function SalesMapPage() {
   const [supervisorName, setSupervisorName] = useQueryState('supervisor',    { defaultValue: '' })
   const [repName,        setRepName]        = useQueryState('rep',    { defaultValue: '' })
   const [outletType,     setOutletType]     = useQueryState('type',   { defaultValue: '' })
+
+  // UI state: fullscreen map + collapsible hero stat strip
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const [heroOpen,     setHeroOpen]     = useState(true)
+
+  // Exit fullscreen with Escape; lock body scroll while fullscreen
+  useEffect(() => {
+    if (!isFullscreen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsFullscreen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = prevOverflow
+    }
+  }, [isFullscreen])
 
   const filters: SalesFilterDto = {
     reportDateFrom: reportDateFrom || undefined,
@@ -82,8 +102,15 @@ export function SalesMapPage() {
   }
 
   return (
-    <div className="flex flex-col gap-3 md:gap-4 p-3 md:p-6 h-[calc(100vh-49px)]">
-      {/* Hero — refined data-terminal aesthetic */}
+    <div
+      className={
+        isFullscreen
+          ? 'fixed inset-0 z-[1100] flex flex-col gap-2 bg-background p-2'
+          : 'flex flex-col gap-3 md:gap-4 p-3 md:p-6 h-[calc(100vh-49px)]'
+      }
+    >
+      {/* Hero — refined data-terminal aesthetic; collapsible */}
+      {heroOpen && (
       <div className="relative overflow-hidden rounded-2xl bg-[radial-gradient(120%_120%_at_0%_0%,#1e293b_0%,#0f172a_55%,#020617_100%)] ring-1 ring-white/[0.06] shadow-[0_1px_0_0_rgba(255,255,255,0.04)_inset,0_24px_48px_-24px_rgba(0,0,0,0.6)] flex-none">
         {/* Background atmosphere */}
         <div
@@ -317,12 +344,35 @@ export function SalesMapPage() {
           )}
         </div>
       </div>
+      )}
 
       {/* Map card — filters bar + map, fills remaining height */}
       <div className="flex flex-col flex-1 min-h-0 rounded-xl border overflow-hidden bg-card shadow-sm">
         <MapFilters filters={filters} onChange={setFilters} />
 
         <div className="relative flex-1 min-h-0">
+          {/* Floating map controls: show/hide stats + fullscreen toggle */}
+          <div className="absolute right-3 top-3 z-[1001] flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setHeroOpen((v) => !v)}
+              title={heroOpen ? 'Hide stats panel' : 'Show stats panel'}
+              aria-label={heroOpen ? 'Hide stats panel' : 'Show stats panel'}
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-card/90 text-foreground shadow-md ring-1 ring-border backdrop-blur-sm transition-colors hover:bg-accent"
+            >
+              {heroOpen ? <ChevronUp className="h-4 w-4" /> : <BarChart3 className="h-4 w-4" />}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsFullscreen((v) => !v)}
+              title={isFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen map'}
+              aria-label={isFullscreen ? 'Exit fullscreen' : 'Fullscreen map'}
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-card/90 text-foreground shadow-md ring-1 ring-border backdrop-blur-sm transition-colors hover:bg-accent"
+            >
+              {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            </button>
+          </div>
+
           {filters.areaName ? (
             <>
               <OutletMap points={points} />
