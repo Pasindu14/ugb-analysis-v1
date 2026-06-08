@@ -1,6 +1,6 @@
 'use client'
 
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
+import { useQuery, useQueries, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { getSalesAction, getSalesFilterOptionsAction } from '../actions/sales.actions'
 import { getSalesMapPointsAction } from '../actions/get-sales-map-points.action'
@@ -9,8 +9,9 @@ import { getSalesRoutesByAreaAction } from '../actions/get-sales-routes-by-area.
 import { getSalesFilterOptionsByAreaAction } from '../actions/get-sales-filter-options-by-area.action'
 import { getSalesImportHistoryAction } from '../actions/get-sales-import-history.action'
 import { deleteSalesImportAction } from '../actions/delete-sales-import.action'
+import { getRouteConflictsAction } from '../actions/get-route-conflicts.action'
 import { useImportDialog, useManageImportsDialog } from '../store'
-import type { SalesFilterDto, SalesMapPoint, SalesAreaFilterOptions, MissingLocationSummary } from '../schemas/sales.schema'
+import type { SalesFilterDto, SalesMapPoint, SalesAreaFilterOptions, MissingLocationSummary, RouteConflict, ConflictFilterDto } from '../schemas/sales.schema'
 import type { ImportHistoryRow } from '../repositories/sales.repository'
 
 export const salesKeys = {
@@ -130,6 +131,55 @@ export function useSalesMissingLocationSummary(filters: SalesFilterDto) {
     },
     enabled: !!filters.areaName,
     placeholderData: keepPreviousData,
+  })
+}
+
+export function useSalesMapPointsForAreas(
+  areas: string[],
+  dateFrom?: string,
+  dateTo?: string,
+) {
+  return useQueries({
+    queries: areas.map((area) => ({
+      queryKey: salesKeys.list({ type: 'map', filters: { areaName: area, reportDateFrom: dateFrom, reportDateTo: dateTo } }),
+      queryFn: async (): Promise<{ area: string; outlets: SalesMapPoint[] }> => {
+        const result = await getSalesMapPointsAction({ filters: { areaName: area, reportDateFrom: dateFrom, reportDateTo: dateTo } })
+        if (!result.success) throw new Error(result.error)
+        return { area, outlets: result.data }
+      },
+      enabled: !!area && !!dateFrom && !!dateTo,
+      placeholderData: keepPreviousData,
+      staleTime: 2 * 60 * 1000,
+    })),
+  })
+}
+
+export function useSalesRoutesForAreas(areas: string[]) {
+  return useQueries({
+    queries: areas.map((area) => ({
+      queryKey: ['sales', 'routes-by-area', area] as const,
+      queryFn: async (): Promise<{ area: string; routes: string[] }> => {
+        const result = await getSalesRoutesByAreaAction({ areaName: area })
+        if (!result.success) throw new Error(result.error)
+        return { area, routes: result.data }
+      },
+      enabled: !!area,
+      staleTime: 5 * 60 * 1000,
+    })),
+  })
+}
+
+export function useRouteConflicts(filters: ConflictFilterDto | null) {
+  return useQuery({
+    queryKey: ['sales', 'conflicts', filters],
+    queryFn: async (): Promise<RouteConflict[]> => {
+      const result = await getRouteConflictsAction(filters!)
+      if (!result.success) throw new Error(result.error)
+      return result.data
+    },
+    enabled: !!filters && !!filters.areaName && !!filters.dateFrom && !!filters.dateTo,
+    placeholderData: keepPreviousData,
+    staleTime: 2 * 60 * 1000,
   })
 }
 

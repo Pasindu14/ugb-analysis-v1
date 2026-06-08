@@ -1,5 +1,5 @@
 "use client";
-import { BarChart2, MapPin } from "lucide-react";
+import { BarChart2, GitMerge, MapPin } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
@@ -20,6 +20,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const salesSubItems = [
     ...(isAdmin ? [{ title: "Area Customer Sales", url: "/sales" }] : []),
     { title: "Billing Map", url: "/sales/map" },
+    { title: "Conflict Identifier", url: "/sales/conflict" },
   ];
 
   const navMain = [

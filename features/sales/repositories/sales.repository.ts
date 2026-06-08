@@ -17,7 +17,7 @@ import {
   DEFAULT_PAGE_SIZE,
 } from '@/lib/queries/pagination'
 import type { AreaCustomerSale, AreaCustomerSaleInsert } from '@/db/schema'
-import type { SalesFilterDto, SalesFilterOptions, SalesMapPoint, SalesAreaFilterOptions, MissingLocationSummary } from '../schemas/sales.schema'
+import type { SalesFilterDto, SalesFilterOptions, SalesMapPoint, SalesAreaFilterOptions, MissingLocationSummary, RouteConflict } from '../schemas/sales.schema'
 
 const BATCH_SIZE = 500
 
@@ -316,6 +316,57 @@ export class SalesRepository {
           .groupBy(areaCustomerSalesTable.importFileName)
           .orderBy(sql`max(${areaCustomerSalesTable.importedAt}) desc`)
         return rows as ImportHistoryRow[]
+      }
+    )
+  }
+
+  static async findRouteConflicts(
+    companyId: number,
+    areaName: string,
+    dateFrom: string,
+    dateTo: string
+  ): Promise<RouteConflict[]> {
+    return executeQuery(
+      { context: this.context, method: 'findRouteConflicts', logParams: { companyId, areaName, dateFrom, dateTo } },
+      async () => {
+        const rows = await db
+          .select({
+            customerCode:     areaCustomerSalesTable.customerCode,
+            customerName:     sql<string>`min(${areaCustomerSalesTable.customerName})`,
+            areaName:         sql<string>`min(${areaCustomerSalesTable.areaName})`,
+            latitude:         sql<number | null>`min(${areaCustomerSalesTable.latitude})`,
+            longitude:        sql<number | null>`min(${areaCustomerSalesTable.longitude})`,
+            uniqueRouteCount: sql<number>`count(distinct ${areaCustomerSalesTable.rootName})::int`,
+            uniqueRepCount:   sql<number>`count(distinct ${areaCustomerSalesTable.repName})::int`,
+            routes:           sql<string[]>`array_agg(distinct ${areaCustomerSalesTable.rootName})`,
+            reps:             sql<string[]>`array_agg(distinct ${areaCustomerSalesTable.repName})`,
+            billCount:        sql<number>`count(*)::int`,
+            firstDate:        sql<string>`min(${areaCustomerSalesTable.reportDate})::text`,
+            lastDate:         sql<string>`max(${areaCustomerSalesTable.reportDate})::text`,
+            totalGross:       sql<string>`sum(${areaCustomerSalesTable.grossSaleAmount})::text`,
+          })
+          .from(areaCustomerSalesTable)
+          .where(and(
+            eq(areaCustomerSalesTable.companyId, companyId),
+            eq(areaCustomerSalesTable.areaName, areaName),
+            gte(areaCustomerSalesTable.reportDate, dateFrom),
+            lte(areaCustomerSalesTable.reportDate, dateTo),
+          ))
+          .groupBy(areaCustomerSalesTable.customerCode)
+          .having(sql`count(distinct ${areaCustomerSalesTable.rootName}) > 1 or count(distinct ${areaCustomerSalesTable.repName}) > 1`)
+          .orderBy(
+            sql`(count(distinct ${areaCustomerSalesTable.rootName}) + count(distinct ${areaCustomerSalesTable.repName})) desc`,
+            sql`count(*) desc`
+          )
+
+        return rows.map((r) => ({
+          ...r,
+          conflictType: (r.uniqueRouteCount > 1 && r.uniqueRepCount > 1)
+            ? 'both' as const
+            : r.uniqueRouteCount > 1
+              ? 'route' as const
+              : 'rep' as const,
+        }))
       }
     )
   }

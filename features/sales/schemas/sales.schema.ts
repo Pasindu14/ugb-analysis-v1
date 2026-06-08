@@ -59,3 +59,31 @@ export type SalesMapPoint = {
   firstDate:       string
   lastDate:        string
 }
+
+export type AreaSelection = {
+  area:   string
+  routes: string[]
+}
+
+export type ConflictFilterDto = {
+  dateFrom: string
+  dateTo:   string
+  areaName: string
+}
+
+export type RouteConflict = {
+  customerCode:     number
+  customerName:     string
+  areaName:         string
+  latitude:         number | null
+  longitude:        number | null
+  uniqueRouteCount: number
+  uniqueRepCount:   number
+  routes:           string[]
+  reps:             string[]
+  billCount:        number
+  firstDate:        string
+  lastDate:         string
+  totalGross:       string
+  conflictType:     'route' | 'rep' | 'both'
+}
