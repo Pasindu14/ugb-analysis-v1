@@ -33,7 +33,10 @@ export default {
 
       // /sales (table/import) is admin-only; redirect regular users to the map
       const isSalesAdminRoute =
-        path === "/sales" || (path.startsWith("/sales/") && !path.startsWith("/sales/map"))
+        path === "/sales" ||
+        (path.startsWith("/sales/") &&
+          !path.startsWith("/sales/map") &&
+          !path.startsWith("/sales/conflict"))
       if (isSalesAdminRoute) {
         const role = auth?.user?.role
         const isAdmin = role !== "employee"
