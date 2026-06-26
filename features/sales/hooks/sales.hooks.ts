@@ -145,7 +145,10 @@ export function useSalesMapPointsForAreas(
       queryFn: async (): Promise<{ area: string; outlets: SalesMapPoint[] }> => {
         const result = await getSalesMapPointsAction({ filters: { areaName: area, reportDateFrom: dateFrom, reportDateTo: dateTo } })
         if (!result.success) throw new Error(result.error)
-        return { area, outlets: result.data }
+        // Guarantee the declared array contract: an area with no map points
+        // can come back with an undefined payload, which would crash consumers
+        // that iterate `outlets` (e.g. conflict-page grouping).
+        return { area, outlets: result.data ?? [] }
       },
       enabled: !!area && !!dateFrom && !!dateTo,
       placeholderData: keepPreviousData,
@@ -161,7 +164,7 @@ export function useSalesRoutesForAreas(areas: string[]) {
       queryFn: async (): Promise<{ area: string; routes: string[] }> => {
         const result = await getSalesRoutesByAreaAction({ areaName: area })
         if (!result.success) throw new Error(result.error)
-        return { area, routes: result.data }
+        return { area, routes: result.data ?? [] }
       },
       enabled: !!area,
       staleTime: 5 * 60 * 1000,

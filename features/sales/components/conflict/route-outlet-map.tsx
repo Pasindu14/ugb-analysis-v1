@@ -4,6 +4,7 @@ import React, { useEffect, useMemo } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, Polygon, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import { BoundaryLayers } from '../map/boundary-layers'
 import type { SalesMapPoint } from '../../schemas/sales.schema'
 
 // ── Convex hull (Andrew's monotone chain) ────────────────────────────────────
@@ -92,6 +93,8 @@ export function RouteOutletMap({ outletsByKey, selectedKeys, routeColors, routeL
           subdomains="abcd"
           maxZoom={20}
         />
+
+        <BoundaryLayers />
 
         <FitBounds outlets={allVisible} />
 

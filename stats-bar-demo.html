@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stats Bar Demo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #050d1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      padding: 24px;
+    }
+
+    /* ── Hero card ─────────────────────────────────────────── */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border-radius: 16px;
+      background: radial-gradient(120% 120% at 0% 0%, #1e293b 0%, #0f172a 55%, #020617 100%);
+      box-shadow:
+        0 1px 0 0 rgba(255,255,255,0.04) inset,
+        0 24px 48px -24px rgba(0,0,0,0.6);
+      ring: 1px solid rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.06);
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    /* dot-grid atmosphere */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0.05;
+      background-image: radial-gradient(circle, rgba(255,255,255,1) 1px, transparent 1px);
+      background-size: 24px 24px;
+      pointer-events: none;
+    }
+
+    /* amber glow top-right */
+    .hero::after {
+      content: '';
+      position: absolute;
+      right: -96px; top: -96px;
+      height: 288px; width: 288px;
+      border-radius: 50%;
+      background: rgba(245,158,11,0.08);
+      filter: blur(48px);
+      pointer-events: none;
+    }
+
+    /* amber left rail */
+    .amber-rail {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: linear-gradient(to bottom, #fcd34d, #f59e0b, #b45309);
+      box-shadow: 0 0 20px rgba(251,191,36,0.45);
+    }
+
+    /* ── Inner layout ──────────────────────────────────────── */
+    .inner {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 16px 32px;
+    }
+
+    /* ── Brand block ───────────────────────────────────────── */
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+    }
+
+    .brand-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(251,191,36,0.2), rgba(245,158,11,0.08), transparent);
+      border: 1px solid rgba(251,191,36,0.3);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+      font-size: 20px;
+    }
+
+    .brand-eyebrow {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(251,191,36,0.7);
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.02em;
+      margin-top: 2px;
+    }
+
+    .brand-sub {
+      font-size: 12px;
+      color: rgba(148,163,184,0.9);
+      margin-top: 2px;
+    }
+
+    /* ── Stat strip ────────────────────────────────────────── */
+    .stat-strip {
+      display: flex;
+      align-items: stretch;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+      backdrop-filter: blur(8px);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .stat-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 10px 16px;
+      min-width: 96px;
+      border-right: 1px solid rgba(255,255,255,0.06);
+    }
+    .stat-cell:last-child { border-right: none; }
+
+    /* amber-tinted total sale cell */
+    .stat-cell.accent {
+      background: linear-gradient(135deg, rgba(245,158,11,0.08), transparent);
+    }
+
+    /* ── Stat labels ───────────────────────────────────────── */
+    .stat-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(100,116,139,1);
+    }
+    .stat-label.sky   { color: rgba(56,189,248,0.8); }
+    .stat-label.violet{ color: rgba(167,139,250,0.8); }
+    .stat-label.amber { color: rgba(251,191,36,0.8); }
+
+    /* ── Status dots ───────────────────────────────────────── */
+    .dot {
+      display: inline-flex;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot.emerald {
+      background: #34d399;
+      box-shadow: 0 0 0 2px rgba(52,211,153,0.2);
+      animation: ping 1.5s cubic-bezier(0,0,0.2,1) infinite;
+    }
+    @keyframes ping {
+      0%,100% { box-shadow: 0 0 0 2px rgba(52,211,153,0.2); }
+      50%      { box-shadow: 0 0 0 5px rgba(52,211,153,0.05); }
+    }
+    .dot.rose   { background: #f43f5e; box-shadow: 0 0 0 2px rgba(244,63,94,0.2); }
+    .dot.slate  { background: #94a3b8; box-shadow: 0 0 0 2px rgba(148,163,184,0.2); }
+    .dot.amber-sm {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: #fbbf24;
+      box-shadow: 0 0 6px rgba(251,191,36,0.7);
+    }
+
+    /* ── Stat values ───────────────────────────────────────── */
+    .stat-value {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .stat-num {
+      font-size: 17px;
+      font-weight: 600;
+      tabular-nums: true;
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-num.emerald { color: #34d399; }
+    .stat-num.rose    { color: #fb7185; }
+    .stat-num.sky     { color: #7dd3fc; }
+    .stat-num.white   { color: #fff; }
+    .stat-num.slate   { color: #cbd5e1; }
+    .stat-num.violet  { color: #c4b5fd; }
+    .stat-num.amber   {
+      color: #fcd34d;
+      font-weight: 700;
+      text-shadow: 0 0 8px rgba(251,191,36,0.25);
+    }
+
+    .stat-pct {
+      font-size: 10px;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-pct.emerald { color: rgba(52,211,153,0.6); }
+    .stat-pct.rose    { color: rgba(251,113,133,0.6); }
+    .stat-pct.emerald-bright { color: rgba(52,211,153,0.7); }
+
+    .stat-sub {
+      font-size: 10px;
+      color: rgba(100,116,139,1);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      margin-top: 1px;
+    }
+
+    /* ── Excel button ──────────────────────────────────────── */
+    .excel-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 14px;
+      height: 36px;
+      border-radius: 8px;
+      background: linear-gradient(to bottom, #fcd34d, #f59e0b);
+      color: #0c0a09;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      box-shadow:
+        0 4px 14px -2px rgba(251,191,36,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.5);
+      outline: 1px solid rgba(251,191,36,0.6);
+      flex-shrink: 0;
+      transition: all 0.15s ease;
+    }
+    .excel-btn:hover {
+      background: linear-gradient(to bottom, #fef08a, #fcd34d);
+      box-shadow:
+        0 6px 20px -2px rgba(251,191,36,0.55),
+        inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+    .excel-btn svg { width: 14px; height: 14px; }
+
+    /* ── Bottom split-meter ────────────────────────────────── */
+    .split-meter {
+      position: relative;
+      height: 3px;
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+    }
+    .split-meter-green {
+      position: absolute;
+      inset-block: 0;
+      left: 0;
+      width: 51%;
+      background: linear-gradient(to right, rgba(52,211,153,0.8), #34d399);
+      box-shadow: 0 0 12px rgba(52,211,153,0.5);
+    }
+    .split-meter-rose {
+      position: absolute;
+      inset-block: 0;
+      left: 51%;
+      width: 49%;
+      background: linear-gradient(to right, rgba(244,63,94,0.6), rgba(244,63,94,0.4));
+      box-shadow: 0 0 8px rgba(244,63,94,0.3);
+    }
+
+    /* ── Annotation panel below ────────────────────────────── */
+    .annotations {
+      margin-top: 32px;
+      width: 100%;
+      max-width: 1100px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+    }
+
+    .ann-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+
+    .ann-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(148,163,184,0.7);
+      margin-bottom: 6px;
+    }
+
+    .ann-formula {
+      font-family: 'Consolas', 'Fira Code', monospace;
+      font-size: 11px;
+      color: #7dd3fc;
+      background: rgba(56,189,248,0.05);
+      border-radius: 6px;
+      padding: 6px 8px;
+      margin-bottom: 6px;
+      white-space: pre;
+    }
+
+    .ann-desc {
+      font-size: 11px;
+      color: rgba(148,163,184,0.8);
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════════════════════
+       STATS BAR
+  ══════════════════════════════════════════════════════════ -->
+  <div style="display:flex;flex-direction:column;align-items:center;width:100%;">
+
+    <div class="hero">
+      <div class="amber-rail"></div>
+
+      <div class="inner">
+        <!-- Brand -->
+        <div class="brand">
+          <div class="brand-icon">🗺️</div>
+          <div>
+            <div class="brand-eyebrow">Sales · Geo Intelligence</div>
+            <div class="brand-title">Billing Map</div>
+            <div class="brand-sub">Geographic distribution of customer outlets</div>
+          </div>
+        </div>
+
+        <!-- Stat strip + Excel button -->
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="stat-strip">
+
+            <!-- 1. HAS SALE -->
+            <div class="stat-cell">
+              <div class="stat-label">
+                <span class="dot emerald"></span>
+                Has Sale
+              </div>
+              <div class="stat-value">
+                <span class="stat-num emerald">346</span>
+                <span class="stat-pct emerald">51%</span>
+              </div>
+            </div>
+
+            <!-- 2. NO SALE -->
+            <div class="stat-cell">
+              <div class="stat-label">
+                <span class="dot rose"></span>
+                No Sale
+              </div>
+              <div class="stat-value">
+                <span class="stat-num rose">336</span>
+                <span class="stat-pct rose">49%</span>
+              </div>
+            </div>
+
+            <!-- 3. TOTAL (W/ NO LOC) — only shown when missingLocCount > 0 -->
+            <div class="stat-cell">
+              <div class="stat-label sky">Total (w/ No Loc)</div>
+              <div class="stat-value">
+                <span class="stat-num sky">685</span>
+              </div>
+            </div>
+
+            <!-- 4. LOCATIONS -->
+            <div class="stat-cell">
+              <div class="stat-label">Locations</div>
+              <div class="stat-value">
+                <span class="stat-num white">672</span>
+              </div>
+            </div>
+
+            <!-- 5. NO LOCATION -->
+            <div class="stat-cell">
+              <div class="stat-label">
+                <span class="dot slate"></span>
+                No Location
+              </div>
+              <div class="stat-value">
+                <span class="stat-num slate">13</span>
+                <span class="stat-pct emerald-bright">1%</span>
+              </div>
+              <div class="stat-sub">71.3K</div>
+            </div>
+
+            <!-- 6. TOTAL BILLS (shown when area filter active) -->
+            <div class="stat-cell">
+              <div class="stat-label">Total Bills</div>
+              <div class="stat-value">
+                <span class="stat-num white">672</span>
+              </div>
+            </div>
+
+            <!-- 7. AVG BILLS / OUTLET -->
+            <div class="stat-cell">
+              <div class="stat-label">Avg Bills / Outlet</div>
+              <div class="stat-value">
+                <span class="stat-num white">1.0</span>
+              </div>
+            </div>
+
+            <!-- 8. AVG BILL VALUE -->
+            <div class="stat-cell">
+              <div class="stat-label violet">Avg Bill Value</div>
+              <div class="stat-value">
+                <span class="stat-num violet">3.3K</span>
+              </div>
+            </div>
+
+            <!-- 9. TOTAL SALE -->
+            <div class="stat-cell accent">
+              <div class="stat-label amber">
+                <span class="dot amber-sm"></span>
+                Total Sale
+              </div>
+              <div class="stat-value">
+                <span class="stat-num amber">2.26M</span>
+              </div>
+            </div>
+
+          </div><!-- /stat-strip -->
+
+          <!-- Excel button -->
+          <button class="excel-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Excel
+          </button>
+        </div>
+      </div><!-- /inner -->
+
+      <!-- Split meter bar -->
+      <div class="split-meter">
+        <div class="split-meter-green"></div>
+        <div class="split-meter-rose"></div>
+      </div>
+    </div><!-- /hero -->
+
+
+    <!-- ══════════════════════════════════════════════════════════
+         ANNOTATION CARDS — how each metric is calculated
+    ══════════════════════════════════════════════════════════ -->
+    <div class="annotations">
+
+      <div class="ann-card">
+        <div class="ann-title">① HAS SALE — 346 (51%)</div>
+        <div class="ann-formula">locSaleCount = points
+  .filter(p => grossSaleAmount > 0).length
+saleCount = locSaleCount + missingLocSaleCount
+salePct   = (saleCount / grandTotal) * 100</div>
+        <div class="ann-desc">Outlets with a sale across <em>both</em> map points (have GPS) and no-location outlets (DB query). Percentage is out of the grand total 685.</div>
+      </div>
+
+      <div class="ann-card">
+        <div class="ann-title">② NO SALE — 336 (49%)</div>
+        <div class="ann-formula">noSaleCount = points.length - locSaleCount
+noSalePct   = (noSaleCount / grandTotal) * 100</div>
+        <div class="ann-desc">Only map-point outlets without a sale. The percentage is also against grand total 685.</div>
+      </div>
+
+      <div class="ann-card">
+        <div class="ann-title">③ TOTAL (W/ NO LOC) — 685</div>
+        <div class="ann-formula">grandTotal = points.length + missingLocCount
+           = 672 + 13 = 685</div>
+        <div class="ann-desc">The true universe of outlets. Only shown when there is at least one outlet missing GPS coordinates.</div>
+      </div>
+
+      <div class="ann-card">
+        <div class="ann-title">④ LOCATIONS — 672</div>
+        <div class="ann-formula">total = points.length</div>
+        <div class="ann-desc">Count of all outlets returned by <code>useSalesMapPoints</code> — those with a valid latitude &amp; longitude (the actual map pins).</div>
+      </div>
+
+      <div class="ann-card">
+        <div class="ann-title">⑤ NO LOCATION — 13 (1%, 71.3K)</div>
+        <div class="ann-formula">-- Postgres (WHERE lat IS NULL OR lng IS NULL)
+count:         COUNT(*)              → 13
+countWithSale: COUNT(*) FILTER(sale>0)
+totalSale:     SUM(grossSaleAmount)  → 71.3K</div>
+        <div class="ann-desc">Separate DB query in <code>findMissingLocationSummary</code>. The 1% is the share of these 13 outlets' sales against the 685 grand total. 71.3K is their combined revenue.</div>
+      </div>
+
+      <div class="ann-card">
+        <div class="ann-title">⑥ TOTAL BILLS — 672</div>
+        <div class="ann-formula">totalBillsArea = points
+  .reduce((sum, p) => sum + p.billCount, 0)</div>
+        <div class="ann-desc">Each map point carries a <code>billCount</code> pre-aggregated in the DB. Summed client-side. Only visible when an area filter is active.</div>
+      </div>
+
+      <div class="ann-card">
+        <div class="ann-title">⑦ AVG BILLS / OUTLET — 1.0</div>
+        <div class="ann-formula">avgBillsPerOutlet = totalBillsArea / total
+                        = 672 / 672 = 1.0</div>
+        <div class="ann-desc">How many bills each located outlet generated on average. A value of 1.0 means every outlet had exactly one bill in this period.</div>
+      </div>
+
+      <div class="ann-card">
+        <div class="ann-title">⑧ AVG BILL VALUE — 3.3K</div>
+        <div class="ann-formula">totalSaleArea = points.reduce(grossSaleAmount)
+avgPerBill    = totalSaleArea / totalBillsArea
+compactCurrency(avgPerBill) → "3.3K"</div>
+        <div class="ann-desc">Revenue per bill for located outlets only (excludes the no-location 71.3K). Formatted by the home-rolled <code>compactCurrency</code> helper.</div>
+      </div>
+
+      <div class="ann-card">
+        <div class="ann-title">⑨ TOTAL SALE — 2.26M</div>
+        <div class="ann-formula">totalSale = points.reduce(grossSaleAmount)
+          + missingLoc.totalSale
+compactCurrency(totalSale) → "2.26M"</div>
+        <div class="ann-desc">The <strong>only metric</strong> that truly combines both data sources. Map-point revenue + no-location revenue = the complete business picture.</div>
+      </div>
+
+    </div><!-- /annotations -->
+  </div>
+
+</body>
+</html>
