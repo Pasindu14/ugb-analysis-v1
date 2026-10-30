@@ -23,6 +23,27 @@ function makeDotIcon(color: string) {
 const greenIcon = makeDotIcon('#22c55e')
 const redIcon   = makeDotIcon('#ef4444')
 
+// Cluster bubble split into green (has sale) and red (no sale) counts
+function createClusterIcon(cluster: { getAllChildMarkers(): L.Marker[] }) {
+  const children = cluster.getAllChildMarkers()
+  const sale = children.filter((m) => m.options.icon === greenIcon).length
+  const noSale = children.length - sale
+
+  const part = (count: number, color: string) =>
+    count > 0
+      ? `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;padding:0 7px;border-radius:13px;background:${color};color:#fff;font:600 12px/1 system-ui,sans-serif">${count.toLocaleString()}</span>`
+      : ''
+
+  const parts = [part(sale, '#22c55e'), part(noSale, '#ef4444')].filter(Boolean).length
+  const width = children.length.toString().length * 8 * parts + parts * 22 + 8
+
+  return L.divIcon({
+    className: '',
+    html: `<div style="display:flex;gap:3px;align-items:center;justify-content:center;padding:3px;border-radius:17px;background:rgba(255,255,255,0.95);box-shadow:0 1px 6px rgba(0,0,0,0.4)">${part(sale, '#22c55e')}${part(noSale, '#ef4444')}</div>`,
+    iconSize: [width, 32],
+  })
+}
+
 function FitBounds({ points }: { points: SalesMapPoint[] }) {
   const map = useMap()
   useEffect(() => {
@@ -104,6 +125,7 @@ export function OutletMap({ points, cluster = true }: OutletMapProps) {
           disableClusteringAtZoom={17}
           removeOutsideVisibleBounds
           showCoverageOnHover={false}
+          iconCreateFunction={createClusterIcon}
         >
           {markers}
         </MarkerClusterGroup>
