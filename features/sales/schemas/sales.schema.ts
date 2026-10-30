@@ -4,6 +4,7 @@ export const salesFilterSchema = z.object({
   reportDateFrom:  z.string().optional(),
   reportDateTo:    z.string().optional(),
   areaName:        z.string().optional(),
+  allAreas:        z.boolean().optional(),
   supervisorName:  z.string().optional(),
   distributorName: z.string().optional(),
   repName:         z.string().optional(),
@@ -16,6 +17,9 @@ export const salesFilterSchema = z.object({
 })
 
 export type SalesFilterDto = z.infer<typeof salesFilterSchema>
+
+// URL value for the "All areas" option on the map; never sent to the server as an area name
+export const ALL_AREAS_VALUE = '__all_areas__'
 
 export type SalesFilterOptions = {
   areaNames:        string[]

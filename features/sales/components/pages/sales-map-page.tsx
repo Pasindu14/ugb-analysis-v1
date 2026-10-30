@@ -8,7 +8,7 @@ import { OutletMap } from '../map/outlet-map-client'
 import { MapFilters } from '../map/map-filters'
 import { Button } from '@/components/ui/button'
 import { exportOutletsToExcel } from '../../utils/export-outlets'
-import type { SalesFilterDto } from '../../schemas/sales.schema'
+import { ALL_AREAS_VALUE, type SalesFilterDto } from '../../schemas/sales.schema'
 
 function previousMonthRange() {
   const now  = new Date()
@@ -56,7 +56,8 @@ export function SalesMapPage() {
   const filters: SalesFilterDto = {
     reportDateFrom: reportDateFrom || undefined,
     reportDateTo:   reportDateTo   || undefined,
-    areaName:       areaName       || undefined,
+    areaName:       areaName === ALL_AREAS_VALUE ? undefined : areaName || undefined,
+    allAreas:       areaName === ALL_AREAS_VALUE ? true : undefined,
     rootName:       rootName       || undefined,
     distributorName: distributorName || undefined,
     supervisorName: supervisorName || undefined,
@@ -64,10 +65,12 @@ export function SalesMapPage() {
     outletType:     outletType     || undefined,
   }
 
+  const hasScope = !!filters.areaName || !!filters.allAreas
+
   function setFilters(next: SalesFilterDto) {
     setReportDateFrom(next.reportDateFrom ?? '')
     setReportDateTo(next.reportDateTo ?? '')
-    setAreaName(next.areaName ?? '')
+    setAreaName(next.allAreas ? ALL_AREAS_VALUE : next.areaName ?? '')
     setRootName(next.rootName ?? '')
     setDistributorName(next.distributorName ?? '')
     setSupervisorName(next.supervisorName ?? '')
@@ -238,7 +241,7 @@ export function SalesMapPage() {
               )}
 
               {/* Total Bills */}
-              {filters.areaName && totalBillsArea > 0 && (
+              {hasScope && totalBillsArea > 0 && (
                 <div className="flex flex-col gap-1 px-3.5 py-2 md:px-4 md:py-2.5 min-w-[88px] md:min-w-[104px]">
                   <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                     Total Bills
@@ -250,7 +253,7 @@ export function SalesMapPage() {
               )}
 
               {/* Avg Bills / Outlet */}
-              {filters.areaName && avgBillsPerOutlet > 0 && (
+              {hasScope && avgBillsPerOutlet > 0 && (
                 <div className="flex flex-col gap-1 px-3.5 py-2 md:px-4 md:py-2.5 min-w-[88px] md:min-w-[104px]">
                   <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                     Avg Bills / Outlet
@@ -262,7 +265,7 @@ export function SalesMapPage() {
               )}
 
               {/* Multi-Bill Outlets */}
-              {filters.areaName && multiBillOutlets > 0 && (
+              {hasScope && multiBillOutlets > 0 && (
                 <div className="flex flex-col gap-1 px-3.5 py-2 md:px-4 md:py-2.5 min-w-[100px] md:min-w-[116px]">
                   <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                     Multi-Bill Outlets
@@ -279,7 +282,7 @@ export function SalesMapPage() {
               )}
 
               {/* Avg per Bill — only when area is selected */}
-              {filters.areaName && avgPerBill > 0 && (
+              {hasScope && avgPerBill > 0 && (
                 <div
                   className="flex flex-col gap-1 px-3.5 py-2 md:px-4 md:py-2.5 min-w-[100px] md:min-w-[120px]"
                   title={avgPerBill.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -373,7 +376,7 @@ export function SalesMapPage() {
             </button>
           </div>
 
-          {filters.areaName ? (
+          {hasScope ? (
             <>
               <OutletMap points={points} />
               {isFetching && (
@@ -391,7 +394,7 @@ export function SalesMapPage() {
                 <MapPin className="h-6 w-6 text-amber-500" />
               </div>
               <div>
-                <p className="text-sm font-semibold">Select an area to load the map</p>
+                <p className="text-sm font-semibold">Select an area (or All areas) to load the map</p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Use the{' '}
                   <span className="font-medium text-amber-500">Area *</span>{' '}

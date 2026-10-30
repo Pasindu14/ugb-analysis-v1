@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { X, Loader2 } from 'lucide-react'
 import { useSalesFilterOptions, useSalesFilterOptionsByArea } from '../../hooks/sales.hooks'
-import type { SalesFilterDto } from '../../schemas/sales.schema'
+import { ALL_AREAS_VALUE, type SalesFilterDto } from '../../schemas/sales.schema'
 
 const ALL = '__all__'
 
@@ -83,6 +83,7 @@ function AreaSelect({
           <SelectValue placeholder={loading ? 'Loading…' : 'Select area…'} />
         </SelectTrigger>
         <SelectContent>
+          <SelectItem value={ALL_AREAS_VALUE} className="text-xs font-semibold">All areas</SelectItem>
           {options.map((o) => (
             <SelectItem key={o} value={o} className="text-xs">{o}</SelectItem>
           ))}
@@ -116,7 +117,8 @@ export function MapFilters({ filters, onChange }: MapFiltersProps) {
     onChange({
       reportDateFrom: filters.reportDateFrom,
       reportDateTo:   filters.reportDateTo,
-      areaName:       v || undefined,
+      areaName:       v === ALL_AREAS_VALUE ? undefined : v || undefined,
+      allAreas:       v === ALL_AREAS_VALUE ? true : undefined,
     })
   }
 
@@ -147,7 +149,7 @@ export function MapFilters({ filters, onChange }: MapFiltersProps) {
       </div>
 
       <AreaSelect
-        value={filters.areaName ?? ''}
+        value={filters.allAreas ? ALL_AREAS_VALUE : filters.areaName ?? ''}
         options={globalOptions?.areaNames ?? []}
         onChange={handleAreaChange}
         loading={loadingGlobalOptions}
