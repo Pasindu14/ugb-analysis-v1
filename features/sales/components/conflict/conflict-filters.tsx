@@ -38,8 +38,10 @@ function AreaRow({
 }: AreaRowProps) {
   const { area, routes: selectedRoutes } = selection
 
+  const allSelected = areaRoutes.length > 0 && selectedRoutes.length === areaRoutes.length
+
   const routeLabel =
-    !area                                       ? 'Select area first'
+    !area                                      ? 'Select area first'
     : loadingRoutes                             ? 'Loading…'
     : areaRoutes.length === 0                   ? 'No routes'
     : selectedRoutes.length === 0               ? 'Pick routes…'
@@ -112,19 +114,17 @@ function AreaRow({
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
             <div className="flex flex-shrink-0 items-center justify-between gap-2 border-b px-3 py-2 bg-muted/30">
-              <div className="flex items-center gap-1.5">
-                <span className="inline-block h-2 w-2 rounded-full" style={{ background: rowColor }} />
+              <label className="flex cursor-pointer items-center gap-2">
+                <Checkbox
+                  checked={allSelected ? true : selectedRoutes.length > 0 ? 'indeterminate' : false}
+                  onCheckedChange={() => (allSelected ? onClearAll() : onSelectAll())}
+                  className="flex-shrink-0"
+                />
                 <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">
-                  {areaRoutes.length} routes
+                  Select all · {areaRoutes.length} routes
                 </span>
-              </div>
-              <div className="flex gap-2">
-                <button type="button" onClick={onSelectAll}
-                  className="text-[11px] font-semibold text-indigo-500 hover:text-indigo-600 transition-colors">All</button>
-                <span className="text-muted-foreground/30 select-none">·</span>
-                <button type="button" onClick={onClearAll}
-                  className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors">Clear</button>
-              </div>
+              </label>
+              <span className="inline-block h-2 w-2 rounded-full" style={{ background: rowColor }} />
             </div>
 
             <ScrollArea className="min-h-0 flex-1">

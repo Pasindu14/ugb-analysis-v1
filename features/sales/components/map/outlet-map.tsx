@@ -3,7 +3,10 @@
 import { useEffect } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
+import MarkerClusterGroup from 'react-leaflet-cluster'
 import 'leaflet/dist/leaflet.css'
+import 'react-leaflet-cluster/dist/assets/MarkerCluster.css'
+import 'react-leaflet-cluster/dist/assets/MarkerCluster.Default.css'
 import { BoundaryLayers } from './boundary-layers'
 import type { SalesMapPoint } from '../../schemas/sales.schema'
 
@@ -53,6 +56,13 @@ export function OutletMap({ points }: OutletMapProps) {
 
       <FitBounds points={points} />
 
+      <MarkerClusterGroup
+        chunkedLoading
+        maxClusterRadius={60}
+        disableClusteringAtZoom={17}
+        removeOutsideVisibleBounds
+        showCoverageOnHover={false}
+      >
       {points.map((p) => (
         <Marker key={p.id} position={[p.latitude, p.longitude]} icon={Number(p.grossSaleAmount) > 0 ? greenIcon : redIcon}>
           <Popup maxWidth={260} className="outlet-popup">
@@ -92,6 +102,7 @@ export function OutletMap({ points }: OutletMapProps) {
           </Popup>
         </Marker>
       ))}
+      </MarkerClusterGroup>
     </MapContainer>
     </div>
   )
