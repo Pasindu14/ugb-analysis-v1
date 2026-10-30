@@ -1,14 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useQueryState } from 'nuqs'
+import { useQueryState, parseAsArrayOf, parseAsString } from 'nuqs'
 import { Map, MapPin, Loader2, Download, Maximize2, Minimize2, ChevronUp, BarChart3 } from 'lucide-react'
 import { useSalesMapPoints, useSalesMissingLocationSummary } from '../../hooks/sales.hooks'
 import { OutletMap } from '../map/outlet-map-client'
 import { MapFilters } from '../map/map-filters'
 import { Button } from '@/components/ui/button'
 import { exportOutletsToExcel } from '../../utils/export-outlets'
-import { ALL_AREAS_VALUE, type SalesFilterDto } from '../../schemas/sales.schema'
+import type { SalesFilterDto } from '../../schemas/sales.schema'
 
 function previousMonthRange() {
   const now  = new Date()
@@ -27,7 +27,7 @@ const defaultRange = previousMonthRange()
 export function SalesMapPage() {
   const [reportDateFrom, setReportDateFrom] = useQueryState('from',   { defaultValue: defaultRange.reportDateFrom })
   const [reportDateTo,   setReportDateTo]   = useQueryState('to',     { defaultValue: defaultRange.reportDateTo })
-  const [areaName,       setAreaName]       = useQueryState('area',   { defaultValue: '' })
+  const [areaNames,      setAreaNames]      = useQueryState('area',   parseAsArrayOf(parseAsString).withDefault([]))
   const [rootName,       setRootName]       = useQueryState('route',  { defaultValue: '' })
   const [distributorName, setDistributorName] = useQueryState('distributor', { defaultValue: '' })
   const [supervisorName, setSupervisorName] = useQueryState('supervisor',    { defaultValue: '' })
@@ -56,8 +56,7 @@ export function SalesMapPage() {
   const filters: SalesFilterDto = {
     reportDateFrom: reportDateFrom || undefined,
     reportDateTo:   reportDateTo   || undefined,
-    areaName:       areaName === ALL_AREAS_VALUE ? undefined : areaName || undefined,
-    allAreas:       areaName === ALL_AREAS_VALUE ? true : undefined,
+    areaNames:      areaNames.length > 0 ? areaNames : undefined,
     rootName:       rootName       || undefined,
     distributorName: distributorName || undefined,
     supervisorName: supervisorName || undefined,
@@ -65,12 +64,12 @@ export function SalesMapPage() {
     outletType:     outletType     || undefined,
   }
 
-  const hasScope = !!filters.areaName || !!filters.allAreas
+  const hasScope = !!filters.areaNames?.length
 
   function setFilters(next: SalesFilterDto) {
     setReportDateFrom(next.reportDateFrom ?? '')
     setReportDateTo(next.reportDateTo ?? '')
-    setAreaName(next.allAreas ? ALL_AREAS_VALUE : next.areaName ?? '')
+    setAreaNames(next.areaNames?.length ? next.areaNames : null)
     setRootName(next.rootName ?? '')
     setDistributorName(next.distributorName ?? '')
     setSupervisorName(next.supervisorName ?? '')
@@ -320,7 +319,7 @@ export function SalesMapPage() {
                 exportOutletsToExcel(points, {
                   reportDateFrom: filters.reportDateFrom,
                   reportDateTo:   filters.reportDateTo,
-                  areaName:       filters.areaName,
+                  areaName:       filters.areaNames?.length === 1 ? filters.areaNames[0] : filters.areaNames ? `${filters.areaNames.length} areas` : undefined,
                 })
               }
               className="h-9 gap-1.5 rounded-lg bg-gradient-to-b from-amber-300 to-amber-500 px-3.5 font-semibold text-slate-950 shadow-[0_4px_14px_-2px_rgba(251,191,36,0.45),inset_0_1px_0_rgba(255,255,255,0.5)] ring-1 ring-amber-300/60 transition-all hover:from-amber-200 hover:to-amber-400 hover:shadow-[0_6px_20px_-2px_rgba(251,191,36,0.55),inset_0_1px_0_rgba(255,255,255,0.6)] disabled:bg-none disabled:bg-slate-700 disabled:text-slate-500 disabled:shadow-none disabled:ring-slate-600"
@@ -394,7 +393,7 @@ export function SalesMapPage() {
                 <MapPin className="h-6 w-6 text-amber-500" />
               </div>
               <div>
-                <p className="text-sm font-semibold">Select an area (or All areas) to load the map</p>
+                <p className="text-sm font-semibold">Select one or more areas to load the map</p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Use the{' '}
                   <span className="font-medium text-amber-500">Area *</span>{' '}

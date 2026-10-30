@@ -116,7 +116,7 @@ export function useSalesMapPoints(filters: SalesFilterDto) {
       if (!result.success) throw new Error(result.error)
       return result.data
     },
-    enabled: !!filters.areaName || !!filters.allAreas,
+    enabled: !!filters.areaName || !!filters.areaNames?.length,
     placeholderData: keepPreviousData,
   })
 }
@@ -129,7 +129,7 @@ export function useSalesMissingLocationSummary(filters: SalesFilterDto) {
       if (!result.success) throw new Error(result.error)
       return result.data
     },
-    enabled: !!filters.areaName || !!filters.allAreas,
+    enabled: !!filters.areaName || !!filters.areaNames?.length,
     placeholderData: keepPreviousData,
   })
 }
