@@ -12,7 +12,6 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { X, Loader2, ChevronDown } from 'lucide-react'
 import { useSalesFilterOptions, useSalesFilterOptionsByArea } from '../../hooks/sales.hooks'
 import type { SalesFilterDto } from '../../schemas/sales.schema'
@@ -104,7 +103,7 @@ function AreaMultiSelect({
         </PopoverTrigger>
         <PopoverContent
           className="flex w-72 flex-col p-0 shadow-xl"
-          style={{ maxHeight: 'var(--radix-popover-content-available-height, 360px)' }}
+          style={{ maxHeight: 'min(360px, var(--radix-popover-content-available-height, 360px))' }}
           align="start"
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
@@ -117,7 +116,7 @@ function AreaMultiSelect({
               Select all · {options.length} areas
             </span>
           </label>
-          <ScrollArea className="min-h-0 flex-1">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
             <div className="py-1">
               {options.map((o) => (
                 <label key={o} className="flex cursor-pointer items-center gap-2.5 px-3 py-[7px] text-xs hover:bg-accent transition-colors">
@@ -126,7 +125,7 @@ function AreaMultiSelect({
                 </label>
               ))}
             </div>
-          </ScrollArea>
+          </div>
         </PopoverContent>
       </Popover>
     </div>

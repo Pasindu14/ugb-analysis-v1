@@ -7,7 +7,6 @@ import { Input }    from '@/components/ui/input'
 import { Button }   from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge }    from '@/components/ui/badge'
 import { ChevronDown, Loader2, Plus, X, CalendarRange, Layers2 } from 'lucide-react'
 import { useSalesFilterOptions } from '../../hooks/sales.hooks'
@@ -109,7 +108,7 @@ function AreaRow({
 
           <PopoverContent
             className="flex w-80 flex-col p-0 shadow-xl"
-            style={{ maxHeight: 'var(--radix-popover-content-available-height, 360px)' }}
+            style={{ maxHeight: 'min(360px, var(--radix-popover-content-available-height, 360px))' }}
             align="start"
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
@@ -127,7 +126,7 @@ function AreaRow({
               <span className="inline-block h-2 w-2 rounded-full" style={{ background: rowColor }} />
             </div>
 
-            <ScrollArea className="min-h-0 flex-1">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
               <div className="py-1">
                 {areaRoutes.map((route) => {
                   const checked = selectedRoutes.includes(route)
@@ -150,7 +149,7 @@ function AreaRow({
                   )
                 })}
               </div>
-            </ScrollArea>
+            </div>
           </PopoverContent>
         </Popover>
       </div>
