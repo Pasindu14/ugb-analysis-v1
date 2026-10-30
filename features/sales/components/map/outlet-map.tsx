@@ -35,35 +35,11 @@ function FitBounds({ points }: { points: SalesMapPoint[] }) {
 
 interface OutletMapProps {
   points: SalesMapPoint[]
+  cluster?: boolean
 }
 
-export function OutletMap({ points }: OutletMapProps) {
-  return (
-    <div className="relative z-0 h-full w-full">
-    <MapContainer
-      center={[7.8731, 80.7718]}
-      zoom={8}
-      className="h-full w-full"
-      scrollWheelZoom
-    >
-      <TileLayer
-        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        maxZoom={19}
-      />
-
-      <BoundaryLayers />
-
-      <FitBounds points={points} />
-
-      <MarkerClusterGroup
-        chunkedLoading
-        maxClusterRadius={60}
-        disableClusteringAtZoom={17}
-        removeOutsideVisibleBounds
-        showCoverageOnHover={false}
-      >
-      {points.map((p) => (
+export function OutletMap({ points, cluster = true }: OutletMapProps) {
+  const markers = points.map((p) => (
         <Marker key={p.id} position={[p.latitude, p.longitude]} icon={Number(p.grossSaleAmount) > 0 ? greenIcon : redIcon}>
           <Popup maxWidth={260} className="outlet-popup">
             <div className="text-[13px] leading-relaxed">
@@ -101,8 +77,39 @@ export function OutletMap({ points }: OutletMapProps) {
             </div>
           </Popup>
         </Marker>
-      ))}
-      </MarkerClusterGroup>
+  ))
+
+  return (
+    <div className="relative z-0 h-full w-full">
+    <MapContainer
+      center={[7.8731, 80.7718]}
+      zoom={8}
+      className="h-full w-full"
+      scrollWheelZoom
+    >
+      <TileLayer
+        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        maxZoom={19}
+      />
+
+      <BoundaryLayers />
+
+      <FitBounds points={points} />
+
+      {cluster ? (
+        <MarkerClusterGroup
+          chunkedLoading
+          maxClusterRadius={60}
+          disableClusteringAtZoom={17}
+          removeOutsideVisibleBounds
+          showCoverageOnHover={false}
+        >
+          {markers}
+        </MarkerClusterGroup>
+      ) : (
+        markers
+      )}
     </MapContainer>
     </div>
   )

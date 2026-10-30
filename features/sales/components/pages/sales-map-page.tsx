@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useQueryState, parseAsArrayOf, parseAsString } from 'nuqs'
-import { Map, MapPin, Loader2, Download, Maximize2, Minimize2, ChevronUp, BarChart3 } from 'lucide-react'
+import { Map, MapPin, Loader2, Download, Maximize2, Minimize2, ChevronUp, BarChart3, Layers } from 'lucide-react'
 import { useSalesMapPoints, useSalesMissingLocationSummary } from '../../hooks/sales.hooks'
 import { OutletMap } from '../map/outlet-map-client'
 import { MapFilters } from '../map/map-filters'
@@ -36,6 +36,7 @@ export function SalesMapPage() {
 
   // UI state: fullscreen map + collapsible hero stat strip
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [clusterEnabled, setClusterEnabled] = useState(true)
   const [heroOpen,     setHeroOpen]     = useState(true)
 
   // Exit fullscreen with Escape; lock body scroll while fullscreen
@@ -366,6 +367,20 @@ export function SalesMapPage() {
             </button>
             <button
               type="button"
+              onClick={() => setClusterEnabled((v) => !v)}
+              title={clusterEnabled ? 'Clustering on — click to show every outlet' : 'Clustering off — click to group outlets'}
+              aria-label={clusterEnabled ? 'Disable marker clustering' : 'Enable marker clustering'}
+              aria-pressed={clusterEnabled}
+              className={[
+                'flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium shadow-md ring-1 ring-border backdrop-blur-sm transition-colors',
+                clusterEnabled ? 'bg-amber-400 text-slate-950 hover:bg-amber-300' : 'bg-card/90 text-foreground hover:bg-accent',
+              ].join(' ')}
+            >
+              <Layers className="h-4 w-4" />
+              Cluster
+            </button>
+            <button
+              type="button"
               onClick={() => setIsFullscreen((v) => !v)}
               title={isFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen map'}
               aria-label={isFullscreen ? 'Exit fullscreen' : 'Fullscreen map'}
@@ -377,7 +392,7 @@ export function SalesMapPage() {
 
           {hasScope ? (
             <>
-              <OutletMap points={points} />
+              <OutletMap points={points} cluster={clusterEnabled} />
               {isFetching && (
                 <div className="absolute inset-0 z-[1000] flex items-center justify-center bg-background/50 backdrop-blur-sm">
                   <div className="flex items-center gap-2.5 rounded-xl bg-card px-5 py-3 shadow-lg ring-1 ring-border">
